@@ -267,6 +267,7 @@ const App = () => {
   const [files, setFiles] = useState<RNFS.ReadDirItem[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState<string>('');
+  const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
   const isDarkMode = useColorScheme() === 'dark';
   
   // Initialize with welcome file content if available
@@ -393,65 +394,91 @@ const App = () => {
     }
   };
 
+  // Toggle sidebar collapsed state
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!isSidebarCollapsed);
+  };
+
   return (
     <SafeAreaView style={[
       styles.container,
       {backgroundColor: isDarkMode ? '#000000' : '#FFFFFF'}
     ]}>
       <View style={styles.appContainer}>
+        {/* Sidebar collapse button */}
+        <TouchableOpacity 
+          style={[
+            styles.collapseButton,
+            {backgroundColor: isDarkMode ? '#2C2C2E' : '#E5E5EA'}
+          ]}
+          onPress={toggleSidebar}>
+          <Text style={{
+            color: isDarkMode ? '#2C9BF0' : '#007AFF',
+            fontSize: 16,
+            fontWeight: 'bold'
+          }}>
+            {isSidebarCollapsed ? '›' : '‹'}
+          </Text>
+        </TouchableOpacity>
+
         {/* Sidebar */}
-        <View style={[
-          styles.sidebar, 
-          {backgroundColor: isDarkMode ? '#1C1C1E' : '#F2F2F7'}
-        ]}>
-          <View style={styles.navigationHeader}>
-            <TouchableOpacity 
-              style={styles.navigationButton} 
-              onPress={navigateUp}>
-              <Text style={{color: isDarkMode ? '#2C9BF0' : '#007AFF'}}>↑ Up</Text>
-            </TouchableOpacity>
-            <Text 
-              style={[
-                styles.currentPathText,
-                {color: isDarkMode ? '#FFFFFF' : '#000000'}
-              ]} 
-              numberOfLines={1}>
-              {currentPath.split('/').pop()}
-            </Text>
-          </View>
-          <View style={styles.actionHeader}>
-            <TouchableOpacity 
-              style={[
-                styles.actionButton,
-                {backgroundColor: isDarkMode ? '#2C2C2E' : '#E5E5EA'}
-              ]} 
-              onPress={openFilePicker}>
-              <Text style={{color: isDarkMode ? '#2C9BF0' : '#007AFF'}}>📂 Open File</Text>
-            </TouchableOpacity>
-          </View>
-          <ScrollView style={styles.fileList}>
-            {files.map((file, index) => (
-              <FileItem
-                key={index}
-                name={file.name}
-                isDirectory={file.isDirectory()}
-                isSelected={selectedFile === file.path}
-                onPress={() => handleFilePress(file)}
-              />
-            ))}
-            {files.length === 0 && (
-              <Text style={[
-                styles.emptyDirectoryText,
-                {color: isDarkMode ? '#8E8E93' : '#8E8E93'}
-              ]}>
-                Empty directory
+        {!isSidebarCollapsed && (
+          <View style={[
+            styles.sidebar, 
+            {backgroundColor: isDarkMode ? '#1C1C1E' : '#F2F2F7'}
+          ]}>
+            <View style={styles.navigationHeader}>
+              <TouchableOpacity 
+                style={styles.navigationButton} 
+                onPress={navigateUp}>
+                <Text style={{color: isDarkMode ? '#2C9BF0' : '#007AFF'}}>↑ Up</Text>
+              </TouchableOpacity>
+              <Text 
+                style={[
+                  styles.currentPathText,
+                  {color: isDarkMode ? '#FFFFFF' : '#000000'}
+                ]} 
+                numberOfLines={1}>
+                {currentPath.split('/').pop()}
               </Text>
-            )}
-          </ScrollView>
-        </View>
+            </View>
+            <View style={styles.actionHeader}>
+              <TouchableOpacity 
+                style={[
+                  styles.actionButton,
+                  {backgroundColor: isDarkMode ? '#2C2C2E' : '#E5E5EA'}
+                ]} 
+                onPress={openFilePicker}>
+                <Text style={{color: isDarkMode ? '#2C9BF0' : '#007AFF'}}>📂 Open File</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.fileList}>
+              {files.map((file, index) => (
+                <FileItem
+                  key={index}
+                  name={file.name}
+                  isDirectory={file.isDirectory()}
+                  isSelected={selectedFile === file.path}
+                  onPress={() => handleFilePress(file)}
+                />
+              ))}
+              {files.length === 0 && (
+                <Text style={[
+                  styles.emptyDirectoryText,
+                  {color: isDarkMode ? '#8E8E93' : '#8E8E93'}
+                ]}>
+                  Empty directory
+                </Text>
+              )}
+            </ScrollView>
+          </View>
+        )}
 
         {/* Main content area */}
-        <View style={styles.contentArea}>
+        <View style={[
+          styles.contentArea,
+          isSidebarCollapsed && styles.expandedContent
+        ]}>
           {selectedFile ? (
             <MarkdownRenderer content={fileContent} />
           ) : (
@@ -481,6 +508,14 @@ const styles = StyleSheet.create({
   appContainer: {
     flex: 1,
     flexDirection: 'row',
+  },
+  collapseButton: {
+    width: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRightWidth: 1,
+    borderRightColor: '#DDDDDD',
+    zIndex: 10,
   },
   sidebar: {
     width: 250,
@@ -532,6 +567,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   contentArea: {
+    flex: 1,
+  },
+  expandedContent: {
     flex: 1,
   },
   noFileSelected: {

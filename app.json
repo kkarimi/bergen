@@ -1,4 +1,9 @@
 {
   "name": "bergen",
-  "displayName": "Bergen Markdown Viewer"
+  "displayName": "Bergen Markdown Viewer",
+  "extra": {
+    "eas": {
+      "projectId": "fce917e0-93f3-4764-a9de-376ca92afb39"
+    }
+  }
 }

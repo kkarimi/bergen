@@ -5,6 +5,7 @@
   "scripts": {
     "android": "react-native run-android",
     "macos": "react-native run-macos",
+    "build-macos": "./build-macos.sh",
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest"
