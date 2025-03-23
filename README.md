@@ -94,6 +94,14 @@ yarn macos
 - [React Native WebView](https://github.com/react-native-webview/react-native-webview) - For rendering markdown content
 - [React Native FS](https://github.com/itinance/react-native-fs) - For file system operations
 
+## 📚 Documentation
+
+Comprehensive documentation is available in the [docs](/docs) directory:
+
+- [Architecture Guide](/docs/architecture.md) - High-level application architecture
+- [Native Code Guide](/docs/native-code-guide.md) - macOS native code organization
+- [Native Module Guide](/docs/native-module-guide.md) - Creating new native modules
+
 ## 🤝 Contributing
 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.

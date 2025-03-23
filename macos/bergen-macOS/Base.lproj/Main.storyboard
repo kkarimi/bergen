@@ -115,6 +115,12 @@
                                                 <action selector="print:" target="Ady-hI-5gd" id="qaZ-4w-aoO"/>
                                             </connections>
                                         </menuItem>
+                                        <menuItem isSeparatorItem="YES" id="KrF-wC-pxd"/>
+                                        <menuItem title="Quit" keyEquivalent="q" id="tG8-rn-pfK">
+                                            <connections>
+                                                <action selector="terminate:" target="Ady-hI-5gd" id="Knh-U5-xDg"/>
+                                            </connections>
+                                        </menuItem>
                                     </items>
                                 </menu>
                             </menuItem>
