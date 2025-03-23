@@ -1,0 +1,103 @@
+<svg
+  width="200"
+  height="200"
+  viewBox="-100 -100 200 200"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Outer circle -->
+  <circle
+    cx="0"
+    cy="0"
+    r="90"
+    stroke="#222"
+    stroke-width="3"
+    fill="none"
+  />
+
+  <!-- Shift the entire BERGEN group left and up, then scale down -->
+  <g transform="translate(-5, -5) scale(0.8)">
+    <!-- B -->
+    <g transform="translate(-62,0)"
+       stroke="#222"
+       stroke-width="3"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+    >
+      <path d="
+        M 0 -30 Q 20 -30 20 -10 Q 20 10  0  10
+        M 0  10 Q 20  10 20  30 Q 20 50  0  50
+        M 0 -30 L 0  50
+      " fill="none" />
+    </g>
+
+    <!-- E -->
+    <g transform="translate(-37,0)"
+       stroke="#222"
+       stroke-width="3"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+    >
+      <path d="
+        M 0 -30 L 20 -30
+        M 0  10  L 15  10
+        M 0  50  L 20  50
+        M 0 -30 L  0  50
+      " fill="none" />
+    </g>
+
+    <!-- R -->
+    <g transform="translate(-12,0)"
+       stroke="#222"
+       stroke-width="3"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+    >
+      <path d="
+        M 0 -30 Q 20 -30 20 -10 Q 20 10   0  10
+        M 0 -30 L  0  50
+        M 0  10  L 20  50
+      " fill="none" />
+    </g>
+
+    <!-- G -->
+    <g transform="translate(13,0)"
+       stroke="#222"
+       stroke-width="3"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+    >
+      <path d="
+        M 20 -30 Q  0 -30  0  10 Q  0  50 20  50
+        M 20  10  L 10  10
+      " fill="none" />
+    </g>
+
+    <!-- E -->
+    <g transform="translate(38,0)"
+       stroke="#222"
+       stroke-width="3"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+    >
+      <path d="
+        M 0 -30 L 20 -30
+        M 0  10  L 15  10
+        M 0  50  L 20  50
+        M 0 -30 L  0  50
+      " fill="none" />
+    </g>
+
+    <!-- N -->
+    <g transform="translate(63,0)"
+       stroke="#222"
+       stroke-width="3"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+    >
+      <path d="
+        M 0  50  L  0 -30 L 20  50  L 20 -30
+      " fill="none" />
+    </g>
+  </g>
+</svg>
