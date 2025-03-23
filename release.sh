@@ -3,6 +3,29 @@
 # Exit on error
 set -e
 
+# Function to print usage
+print_usage() {
+    echo "Usage: $0 [--bump-type <patch|minor|major>]"
+    echo "Default bump type is patch"
+    exit 1
+}
+
+# Parse command line arguments
+BUMP_TYPE="patch"
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --bump-type) BUMP_TYPE="$2"; shift ;;
+        *) print_usage ;;
+    esac
+    shift
+done
+
+# Validate bump type
+if [[ ! "$BUMP_TYPE" =~ ^(patch|minor|major)$ ]]; then
+    echo "❌ Invalid bump type. Must be patch, minor, or major"
+    print_usage
+fi
+
 # Check if GitHub CLI is installed
 if ! command -v gh &> /dev/null; then
     echo "❌ GitHub CLI (gh) is not installed. Please install it first:"
@@ -38,19 +61,44 @@ if ! git diff-index --quiet HEAD --; then
     exit 1
 fi
 
+# Get current version from package.json
+CURRENT_VERSION=$(node -p "require('./package.json').version")
+echo "📝 Current version: $CURRENT_VERSION"
+
+# Bump version using node
+NEW_VERSION=$(node -e "
+const [major, minor, patch] = '${CURRENT_VERSION}'.split('.');
+const bumpType = '${BUMP_TYPE}';
+let newVersion;
+if (bumpType === 'major') {
+    newVersion = \`\${Number(major) + 1}.0.0\`;
+} else if (bumpType === 'minor') {
+    newVersion = \`\${major}.\${Number(minor) + 1}.0\`;
+} else {
+    newVersion = \`\${major}.\${minor}.\${Number(patch) + 1}\`;
+}
+console.log(newVersion);
+")
+
+echo "🔼 Bumping version from $CURRENT_VERSION to $NEW_VERSION"
+
+# Update version in package.json
+node -e "
+const fs = require('fs');
+const package = require('./package.json');
+package.version = '${NEW_VERSION}';
+fs.writeFileSync('./package.json', JSON.stringify(package, null, 2) + '\n');
+"
+
+# Commit the version bump
+git add package.json
+git commit -m "chore: bump version to v${NEW_VERSION}"
+
 # Build the app
 echo "🏗 Building the app..."
 ./build-macos.sh
 
-# Get the version from package.json
-VERSION=$(node -p "require('./package.json').version")
-ZIP_NAME="bergen-macos-v${VERSION}.zip"
-
-# Check if tag already exists
-if git rev-parse "v${VERSION}" &> /dev/null; then
-    echo "❌ Tag v${VERSION} already exists. Please update version in package.json"
-    exit 1
-fi
+ZIP_NAME="bergen-macos-v${NEW_VERSION}.zip"
 
 # Check if zip file exists
 if [ ! -f "$ZIP_NAME" ]; then
@@ -59,14 +107,14 @@ if [ ! -f "$ZIP_NAME" ]; then
 fi
 
 # Create GitHub release
-echo "🚀 Creating GitHub release v${VERSION}..."
-gh release create "v${VERSION}" \
-    --title "Bergen v${VERSION}" \
-    --notes "Release notes for version ${VERSION}" \
+echo "🚀 Creating GitHub release v${NEW_VERSION}..."
+gh release create "v${NEW_VERSION}" \
+    --title "Bergen v${NEW_VERSION}" \
+    --notes "Release notes for version ${NEW_VERSION}" \
     --draft \
     "$ZIP_NAME"
 
-echo "✅ Draft release v${VERSION} created successfully!"
+echo "✅ Draft release v${NEW_VERSION} created successfully!"
 echo "📦 Binary uploaded to GitHub releases"
 echo "🌎 Please review the release at: $REPO_URL/releases"
 echo "   Once reviewed, you can publish it from the GitHub web interface" 

@@ -104,6 +104,32 @@ Contributions are what make the open source community such an amazing place to l
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
+### 📦 Creating a Release
+
+The project uses semantic versioning ([semver](https://semver.org/)) with version format `major.minor.patch`. The initial version starts at `0.0.1`.
+
+To create a new release:
+
+```bash
+# Default: bump patch version (e.g., 0.0.1 -> 0.0.2)
+yarn release
+
+# Bump minor version (e.g., 0.0.1 -> 0.1.0)
+yarn release --bump-type minor
+
+# Bump major version (e.g., 0.0.1 -> 1.0.0)
+yarn release --bump-type major
+```
+
+The release script will:
+1. Bump the version in package.json
+2. Create a version commit
+3. Build the macOS app
+4. Create a draft GitHub release
+5. Upload the binary
+
+After running the script, review and publish the release from the GitHub web interface.
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details

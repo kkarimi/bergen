@@ -7,7 +7,7 @@
     "android": "react-native run-android",
     "macos": "react-native run-macos",
     "build-macos": "./build-macos.sh",
-    "release": "./release.sh",
+    "release": "./release.sh --bump-type patch",
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest"
