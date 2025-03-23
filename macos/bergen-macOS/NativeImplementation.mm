@@ -2,6 +2,7 @@
 #import <Cocoa/Cocoa.h>
 #import <React/RCTBridgeModule.h>
 #import <React/RCTEventEmitter.h>
+#import <React/RCTUtils.h>
 
 #pragma mark - MenuManager Implementation
 
@@ -63,18 +64,42 @@
 
 @end
 
+#pragma mark - FileManager Declaration
+
+@interface FileManagerModule : RCTEventEmitter <RCTBridgeModule, NSOpenSavePanelDelegate>
+@end
+
 #pragma mark - NativeMenuModule Implementation
 
 @interface NativeMenuModule : RCTEventEmitter <RCTBridgeModule>
++ (instancetype)sharedInstance;
+- (void)handleOpenFileMenuAction;
 @end
+
+// Static shared instance for menu actions
+static NativeMenuModule *sharedMenuModuleInstance = nil;
 
 @implementation NativeMenuModule
 
++ (instancetype)sharedInstance
+{
+  return sharedMenuModuleInstance;
+}
+
 RCT_EXPORT_MODULE();
+
+- (instancetype)init
+{
+  self = [super init];
+  if (self) {
+    sharedMenuModuleInstance = self;
+  }
+  return self;
+}
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[@"menuItemSelected"];
+  return @[@"menuItemSelected", @"fileMenuAction"];
 }
 
 + (BOOL)requiresMainQueueSetup
@@ -109,6 +134,80 @@ RCT_EXPORT_METHOD(addMenuItem:(NSString *)title
   if (identifier) {
     [self sendEventWithName:@"menuItemSelected" body:@{@"identifier": identifier}];
   }
+}
+
+// Handle File -> Open menu action
+- (void)handleOpenFileMenuAction
+{
+  // Send an event to JavaScript to notify the File -> Open menu was clicked
+  [self sendEventWithName:@"fileMenuAction" body:@{@"action": @"openFile"}];
+  
+  dispatch_async(dispatch_get_main_queue(), ^{
+    NSOpenPanel *panel = [NSOpenPanel openPanel];
+    panel.canChooseFiles = YES;
+    panel.canChooseDirectories = NO;
+    panel.allowsMultipleSelection = NO;
+    panel.allowedFileTypes = @[@"md", @"markdown"];
+    panel.title = @"Open Markdown File";
+    
+    [panel beginWithCompletionHandler:^(NSInteger result) {
+      if (result == NSModalResponseOK) {
+        NSURL *fileURL = panel.URLs.firstObject;
+        if (fileURL) {
+          NSString *filePath = [fileURL path];
+          [self sendEventWithName:@"fileMenuAction" body:@{
+            @"action": @"fileSelected",
+            @"path": filePath
+          }];
+        }
+      }
+    }];
+  });
+}
+
+@end
+
+#pragma mark - FileManager Implementation
+
+@implementation FileManagerModule
+
+RCT_EXPORT_MODULE();
+
+- (NSArray<NSString *> *)supportedEvents
+{
+  return @[@"fileSelected"];
+}
+
++ (BOOL)requiresMainQueueSetup
+{
+  return YES;
+}
+
+RCT_EXPORT_METHOD(showOpenDialog:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+{
+  dispatch_async(dispatch_get_main_queue(), ^{
+    NSOpenPanel *panel = [NSOpenPanel openPanel];
+    panel.canChooseFiles = YES;
+    panel.canChooseDirectories = NO;
+    panel.allowsMultipleSelection = NO;
+    panel.allowedFileTypes = @[@"md", @"markdown"];
+    panel.title = @"Open Markdown File";
+    
+    [panel beginWithCompletionHandler:^(NSInteger result) {
+      if (result == NSModalResponseOK) {
+        NSURL *fileURL = panel.URLs.firstObject;
+        if (fileURL) {
+          NSString *filePath = [fileURL path];
+          resolve(filePath);
+        } else {
+          resolve(nil);
+        }
+      } else {
+        resolve(nil);
+      }
+    }];
+  });
 }
 
 @end

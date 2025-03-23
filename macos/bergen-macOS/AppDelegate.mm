@@ -85,14 +85,24 @@
  */
 - (void)buildMenu
 {
-  // The standard menu items are automatically created from the storyboard
-  // Additional menu items can be added here programmatically if needed
+  // The standard menu items are already created from the storyboard
+  // Here we're connecting the File -> Open menu item to our implementation
   
-  // For example:
-  // [self.menuManager createMenuItemWithTitle:@"Custom Action" 
-  //                                   action:@selector(customAction:) 
-  //                            keyEquivalent:@"c" 
-  //                                menuTitle:@"File"];
+  NSMenu *mainMenu = [NSApp mainMenu];
+  for (NSMenuItem *item in [mainMenu itemArray]) {
+    if ([[item title] isEqualToString:@"File"]) {
+      NSMenu *fileMenu = [item submenu];
+      for (NSMenuItem *fileItem in [fileMenu itemArray]) {
+        if ([[fileItem title] isEqualToString:@"Open…"] || 
+            [[fileItem title] isEqualToString:@"Open"]) {
+          fileItem.target = [NativeMenuModule sharedInstance];
+          fileItem.action = @selector(handleOpenFileMenuAction);
+          fileItem.enabled = YES;
+        }
+      }
+      break;
+    }
+  }
 }
 
 @end

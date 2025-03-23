@@ -64,28 +64,32 @@ Key methods:
 - `sourceURLForBridge:` - Provides the URL for the JavaScript bundle
 - `bundleURL` - Returns the URL based on debug/release mode
 - `concurrentRootEnabled` - Controls React 18 concurrent features
-- `buildMenu` - Sets up the application menu
+- `buildMenu` - Sets up the application menu and wires up menu item actions
 
 ### Menu System
 
-The native menu system is handled by:
+The native menu system consists of:
 
-1. **Main.storyboard** - Contains the default menu structure
+1. **Main.storyboard** - Contains the default menu structure including:
+   - Application menu (bergen)
+   - File menu
+   - Edit menu
+   - View menu
+   - Window menu
+   - Help menu
+
 2. **MenuManager** - Singleton class that manages menus programmatically
 
-#### Main.storyboard
+3. **NativeMenuModule** - Handles menu actions and bridges to React Native
 
-The storyboard defines the standard macOS menu structure including:
-- Application menu (bergen)
-- File menu
-- Edit menu
-- View menu
-- Window menu
-- Help menu
+The menu includes important functionality:
+- File -> Open (⌘O): Opens a native file picker dialog to select markdown files
+- File -> Quit (⌘Q): Quits the application
+- Application menu -> Quit bergen (⌘Q): Alternative quit option
 
-The standard Quit functionality is available in two places:
-- Application menu: "Quit bergen" (⌘Q)
-- File menu: "Quit" (⌘Q)
+### Native Modules
+
+The application implements several native modules to bridge between React Native and macOS:
 
 #### MenuManager
 
@@ -104,9 +108,7 @@ MenuManager *menuManager = [MenuManager sharedInstance];
 
 This design separates menu management from the AppDelegate, making it easier to maintain and extend.
 
-### Native Modules
-
-Native modules bridge between JavaScript and native code. The project includes:
+The project includes the following native modules:
 
 #### NativeMenuModule
 
@@ -114,6 +116,8 @@ Allows JavaScript code to interact with the native menu system:
 
 - Exposes methods to add/modify menu items
 - Sends events to JavaScript when menu items are selected
+- Handles File -> Open menu action via native file picker
+- Maintains a shared instance for access from AppDelegate
 - Runs on the main thread for UI operations
 
 Example JavaScript usage:
@@ -132,6 +136,33 @@ menuEmitter.addListener('menuItemSelected', (event) => {
     // Handle the menu action
   }
 });
+```
+
+#### FileManagerModule
+
+Provides native file picker functionality:
+
+- Exposes a `showOpenDialog` method that returns a Promise with the selected file path
+- Configures the dialog to filter for markdown files only
+- Runs on the main thread for UI operations
+
+Example JavaScript usage:
+```javascript
+import { NativeModules } from 'react-native';
+
+const { FileManagerModule } = NativeModules;
+
+async function openMarkdownFile() {
+  try {
+    const filePath = await FileManagerModule.showOpenDialog();
+    if (filePath) {
+      // Handle the selected file
+      console.log('Selected file:', filePath);
+    }
+  } catch (error) {
+    console.error('Failed to open file dialog:', error);
+  }
+}
 ```
 
 ## Adding New Native Functionality

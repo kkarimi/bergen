@@ -7,8 +7,13 @@ import {
   TouchableOpacity,
   ScrollView,
   useColorScheme,
+  NativeModules,
+  NativeEventEmitter,
 } from 'react-native';
 import RNFS from 'react-native-fs';
+
+// Get native modules
+const { NativeMenuModule, FileManagerModule } = NativeModules;
 
 // Component to render file item in sidebar
 const FileItem = ({
@@ -270,6 +275,57 @@ const App = () => {
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
   const isDarkMode = useColorScheme() === 'dark';
   
+  // Set up native event listeners for menu actions
+  useEffect(() => {
+    // Initialize native event emitter
+    const menuEventEmitter = new NativeEventEmitter(NativeMenuModule);
+    
+    // Listen for menu actions
+    const fileMenuSubscription = menuEventEmitter.addListener(
+      'fileMenuAction',
+      (event) => {
+        if (event.action === 'fileSelected' && event.path) {
+          handleSelectedFile(event.path);
+        }
+      }
+    );
+    
+    // Clean up subscriptions
+    return () => {
+      fileMenuSubscription.remove();
+    };
+  }, []);
+  
+  // Handle file selection from native file picker
+  const handleSelectedFile = async (filePath: string) => {
+    if (!filePath.endsWith('.md') && !filePath.endsWith('.markdown')) {
+      console.warn('Not a markdown file:', filePath);
+      return;
+    }
+    
+    try {
+      // Update the current directory to the parent directory of the selected file
+      const parentPath = filePath.substring(0, filePath.lastIndexOf('/'));
+      setCurrentPath(parentPath);
+      
+      // Set selected file and load content
+      setSelectedFile(filePath);
+      const content = await RNFS.readFile(filePath, 'utf8');
+      setFileContent(content);
+      
+      // Refresh file list
+      const dirItems = await RNFS.readDir(parentPath);
+      setFiles(dirItems.sort((a, b) => {
+        if (a.isDirectory() && !b.isDirectory()) return -1;
+        if (!a.isDirectory() && b.isDirectory()) return 1;
+        return a.name.localeCompare(b.name);
+      }));
+    } catch (error) {
+      console.error('Failed to load selected file:', error);
+      setFileContent('Error loading file content.');
+    }
+  };
+  
   // Initialize with welcome file content if available
   useEffect(() => {
     const loadWelcomeFile = async () => {
@@ -378,16 +434,21 @@ const App = () => {
   // Open file dialog to select any markdown file
   const openFilePicker = async () => {
     try {
-      // On macOS, we can directly access file dialog APIs via NativeModules
-      // This is a simplified placeholder - in a real app, you'd implement native modules
-      // that connect to the macOS file picker dialog
-      
-      // For now, we'll simulate opening the user's home directory
-      const homePath = RNFS.DocumentDirectoryPath.split('/').slice(0, 3).join('/') + '/Documents';
-      if (await RNFS.exists(homePath)) {
-        setCurrentPath(homePath);
-        setSelectedFile(null);
-        setFileContent('');
+      if (FileManagerModule) {
+        // Use the native file picker
+        const filePath = await FileManagerModule.showOpenDialog();
+        if (filePath) {
+          handleSelectedFile(filePath);
+        }
+      } else {
+        console.warn('FileManagerModule not available. Falling back to default directory');
+        // Fallback: open the user's home directory
+        const homePath = RNFS.DocumentDirectoryPath.split('/').slice(0, 3).join('/') + '/Documents';
+        if (await RNFS.exists(homePath)) {
+          setCurrentPath(homePath);
+          setSelectedFile(null);
+          setFileContent('');
+        }
       }
     } catch (error) {
       console.error('Failed to open file picker:', error);
