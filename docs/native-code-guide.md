@@ -30,22 +30,21 @@ The main native code is located in the `/macos` directory:
 
 ```
 /macos
-├── Podfile                 # CocoaPods dependency management
-├── bergen-macos/           # Main application code
-│   ├── AppDelegate.h       # App initialization and lifecycle
-│   ├── AppDelegate.mm      # Implementation of app delegate
-│   ├── main.m              # App entry point
-│   ├── MenuManager.h       # Menu system management
-│   ├── MenuManager.m       # Menu implementation
-│   ├── NativeMenuModule.h  # React Native bridge for menus
-│   ├── NativeMenuModule.m  # Implementation of native menu module
-│   ├── Info.plist          # App configuration
-│   ├── bergen.entitlements # App permissions
-│   └── Base.lproj/         # Storyboards and UI resources
-│       └── Main.storyboard # Main UI layout including menus
-├── bergen.xcodeproj/       # Xcode project configuration
-└── bergen.xcworkspace/     # Xcode workspace
+├── Podfile                     # CocoaPods dependency management
+├── bergen-macos/               # Main application code
+│   ├── AppDelegate.h           # App initialization and lifecycle
+│   ├── AppDelegate.mm          # Implementation of app delegate
+│   ├── main.m                  # App entry point
+│   ├── NativeImplementation.mm # Combined native module implementations
+│   ├── Info.plist              # App configuration
+│   ├── bergen.entitlements     # App permissions
+│   └── Base.lproj/             # Storyboards and UI resources
+│       └── Main.storyboard     # Main UI layout including menus
+├── bergen.xcodeproj/           # Xcode project configuration
+└── bergen.xcworkspace/         # Xcode workspace
 ```
+
+> **Note on Implementation Approach**: To avoid Xcode project file modifications and simplify the build process, the MenuManager and NativeMenuModule implementations are combined in the single `NativeImplementation.mm` file, which is directly imported by the AppDelegate.
 
 ## Key Components
 

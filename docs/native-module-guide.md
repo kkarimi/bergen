@@ -36,7 +36,56 @@ In the Bergen application, native modules follow this architecture:
 
 ## Creating a Native Module for macOS
 
-### 1. Create the Header File
+There are two approaches to adding native modules to the project:
+
+### Approach 1: Combined Implementation File (Recommended)
+
+To avoid having to modify the Xcode project file directly, we recommend adding new native modules to the `NativeImplementation.mm` file.
+
+1. Open `macos/bergen-macos/NativeImplementation.mm`
+2. Add your new module implementation following the existing pattern
+
+```objc
+// Add this to NativeImplementation.mm
+
+#pragma mark - YourNewModule Implementation
+
+@interface YourNewModule : RCTEventEmitter <RCTBridgeModule>
+@end
+
+@implementation YourNewModule
+
+RCT_EXPORT_MODULE();
+
+// Required for RCTEventEmitter
+- (NSArray<NSString *> *)supportedEvents
+{
+  return @[@"yourCustomEvent"];
+}
+
+// Main queue setup (for UI operations)
++ (BOOL)requiresMainQueueSetup
+{
+  return YES; // Return NO if not using UI operations
+}
+
+// Your module methods
+RCT_EXPORT_METHOD(yourMethod:(NSString *)param
+                  callback:(RCTResponseSenderBlock)callback)
+{
+  // Implementation
+  NSString *result = [NSString stringWithFormat:@"Received: %@", param];
+  callback(@[[NSNull null], result]);
+}
+
+@end
+```
+
+### Approach 2: Separate Files (Advanced)
+
+If you prefer to organize your code in separate files, you'll need to modify the Xcode project to include them:
+
+#### 1. Create the Header File
 
 ```objc
 // ExampleModule.h
@@ -52,7 +101,7 @@ NS_ASSUME_NONNULL_BEGIN
 NS_ASSUME_NONNULL_END
 ```
 
-### 2. Create the Implementation File
+#### 2. Create the Implementation File
 
 ```objc
 // ExampleModule.m
@@ -107,12 +156,12 @@ RCT_EXPORT_METHOD(promiseMethod:(NSString *)param
 @end
 ```
 
-### 3. Add to the Xcode Project
+#### 3. Add to the Xcode Project
 
 1. In Xcode, right-click on the `bergen-macos` group
 2. Select "Add Files to 'bergen-macos'..."
 3. Select your new files
-4. Ensure "Copy items if needed" is unchecked
+4. Ensure "Copy items if needed" is unchecked and "Add to targets" is checked for "bergen-macOS"
 5. Click "Add"
 
 ## Exposing Native Methods to JavaScript
