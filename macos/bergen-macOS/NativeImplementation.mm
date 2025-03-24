@@ -71,9 +71,10 @@
 
 #pragma mark - NativeMenuModule Implementation
 
-@interface NativeMenuModule : RCTEventEmitter <RCTBridgeModule>
+@interface NativeMenuModule : RCTEventEmitter <RCTBridgeModule, NSMenuItemValidation>
 + (instancetype)sharedInstance;
 - (void)handleOpenFileMenuAction;
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem;
 @end
 
 // Static shared instance for menu actions
@@ -137,8 +138,17 @@ RCT_EXPORT_METHOD(addMenuItem:(NSString *)title
 }
 
 // Handle File -> Open menu action
+// Implement NSMenuItemValidation protocol to enable menu items
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+  // Always enable menu items that target this module
+  return YES;
+}
+
 - (void)handleOpenFileMenuAction
 {
+  NSLog(@"File -> Open menu action triggered");
+  
   // Send an event to JavaScript to notify the File -> Open menu was clicked
   [self sendEventWithName:@"fileMenuAction" body:@{@"action": @"openFile"}];
   
@@ -155,6 +165,7 @@ RCT_EXPORT_METHOD(addMenuItem:(NSString *)title
         NSURL *fileURL = panel.URLs.firstObject;
         if (fileURL) {
           NSString *filePath = [fileURL path];
+          NSLog(@"Selected file: %@", filePath);
           [self sendEventWithName:@"fileMenuAction" body:@{
             @"action": @"fileSelected",
             @"path": filePath

@@ -131,6 +131,56 @@ When encountering build issues:
 
 ## Common Build Issues
 
+### Menu Items Disabled or Not Working
+
+If menu items in the native macOS menu bar appear disabled (greyed out) even though they should be enabled:
+
+1. **Implement NSMenuItemValidation Protocol**: The target of the menu item should implement the `NSMenuItemValidation` protocol with the `validateMenuItem:` method:
+
+```objc
+@interface YourClass : NSObject <NSMenuItemValidation>
+@end
+
+@implementation YourClass
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+  // Return YES to enable the menu item
+  return YES;
+}
+@end
+```
+
+2. **Use IBAction in AppDelegate**: Create a direct connection from the storyboard to the AppDelegate:
+
+```objc
+// In AppDelegate.h
+- (IBAction)openDocument:(id)sender;
+
+// In AppDelegate.mm
+- (IBAction)openDocument:(id)sender)
+{
+  // Handling code here
+}
+```
+
+3. **Ensure Proper Target Assignment**: Make sure the target is correctly set and not being overridden:
+
+```objc
+// Set target and enable the menu item
+[menuItem setTarget:targetObject];
+[menuItem setAction:@selector(yourAction:)];
+[menuItem setEnabled:YES];
+```
+
+4. **Debug Menu Connections**: Add logging to verify menu items and their enabled state:
+
+```objc
+NSLog(@"Menu item: %@, enabled: %d, target exists: %@", 
+      [menuItem title], 
+      [menuItem isEnabled],
+      [menuItem target] ? @"YES" : @"NO");
+```
+
 ### Locked Database
 
 If you encounter a build error like:

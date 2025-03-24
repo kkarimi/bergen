@@ -35,6 +35,21 @@
 }
 
 /**
+ * Handles the File -> Open menu action.
+ * This method is called when the user selects File -> Open from the menu.
+ *
+ * @param sender The object that sent the action.
+ */
+- (IBAction)openDocument:(id)sender
+{
+  NSLog(@"openDocument: called in AppDelegate");
+  
+  // Forward the open document action to the NativeMenuModule
+  // This ensures that the React Native code will be notified
+  [[NativeMenuModule sharedInstance] handleOpenFileMenuAction];
+}
+
+/**
  * Provides the URL for the JavaScript bundle.
  *
  * @param bridge The React Native bridge instance.
@@ -88,16 +103,38 @@
   // The standard menu items are already created from the storyboard
   // Here we're connecting the File -> Open menu item to our implementation
   
+  // Get the shared NativeMenuModule instance
+  NativeMenuModule *menuModule = [NativeMenuModule sharedInstance];
+  
   NSMenu *mainMenu = [NSApp mainMenu];
+  NSLog(@"Main menu has %lu items", (unsigned long)[mainMenu numberOfItems]);
+  
   for (NSMenuItem *item in [mainMenu itemArray]) {
+    NSLog(@"Menu item: %@", [item title]);
+    
     if ([[item title] isEqualToString:@"File"]) {
       NSMenu *fileMenu = [item submenu];
+      NSLog(@"File menu has %lu items", (unsigned long)[fileMenu numberOfItems]);
+      
       for (NSMenuItem *fileItem in [fileMenu itemArray]) {
+        NSLog(@"File menu item: %@, enabled: %d", [fileItem title], [fileItem isEnabled]);
+        
         if ([[fileItem title] isEqualToString:@"Open…"] || 
             [[fileItem title] isEqualToString:@"Open"]) {
-          fileItem.target = [NativeMenuModule sharedInstance];
-          fileItem.action = @selector(handleOpenFileMenuAction);
-          fileItem.enabled = YES;
+          NSLog(@"Found Open menu item, connecting action");
+          
+          // Force enable the menu item and set its target and action
+          [fileItem setEnabled:YES];
+          [fileItem setTarget:menuModule];
+          [fileItem setAction:@selector(handleOpenFileMenuAction)];
+          
+          // Set a tag to identify it
+          [fileItem setTag:1001];
+          
+          NSLog(@"After setting: target exists: %@, action: %@, enabled: %d", 
+                [fileItem target] ? @"YES" : @"NO",
+                NSStringFromSelector([fileItem action]),
+                [fileItem isEnabled]);
         }
       }
       break;

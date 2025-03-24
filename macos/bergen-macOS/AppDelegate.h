@@ -14,4 +14,10 @@
  */
 @property (nonatomic, strong, readonly) MenuManager *menuManager;
 
+/**
+ * Handles the File -> Open menu action.
+ * This is connected to the Open menu item in the storyboard.
+ */
+- (IBAction)openDocument:(id)sender;
+
 @end
