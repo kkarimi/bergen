@@ -284,7 +284,9 @@ const App = () => {
     const fileMenuSubscription = menuEventEmitter.addListener(
       'fileMenuAction',
       (event) => {
+        console.log('Received file menu action:', event);
         if (event.action === 'fileSelected' && event.path) {
+          console.log('Will handle selected file:', event.path);
           handleSelectedFile(event.path);
         }
       }
@@ -298,6 +300,8 @@ const App = () => {
   
   // Handle file selection from native file picker
   const handleSelectedFile = async (filePath: string) => {
+    console.log('handleSelectedFile called with:', filePath);
+    
     if (!filePath.endsWith('.md') && !filePath.endsWith('.markdown')) {
       console.warn('Not a markdown file:', filePath);
       return;
@@ -306,28 +310,41 @@ const App = () => {
     try {
       // Update the current directory to the parent directory of the selected file
       const parentPath = filePath.substring(0, filePath.lastIndexOf('/'));
+      console.log('Setting current path to:', parentPath);
       setCurrentPath(parentPath);
       
-      // Set selected file and load content
-      setSelectedFile(filePath);
+      // Load file content
+      console.log('Reading file content...');
       const content = await RNFS.readFile(filePath, 'utf8');
+      console.log('File content loaded, length:', content.length);
+      
+      // Set selected file and content
+      console.log('Updating state with selected file and content');
+      setSelectedFile(filePath);
       setFileContent(content);
       
       // Refresh file list
+      console.log('Refreshing file list...');
       const dirItems = await RNFS.readDir(parentPath);
       setFiles(dirItems.sort((a, b) => {
         if (a.isDirectory() && !b.isDirectory()) return -1;
         if (!a.isDirectory() && b.isDirectory()) return 1;
         return a.name.localeCompare(b.name);
       }));
+      console.log('File list updated with', dirItems.length, 'items');
     } catch (error) {
       console.error('Failed to load selected file:', error);
       setFileContent('Error loading file content.');
     }
   };
   
-  // Initialize with welcome file content if available
+  // Initialize with welcome file content if available, but only if no file is selected
   useEffect(() => {
+    // Skip if a file is already selected
+    if (selectedFile && fileContent) {
+      return;
+    }
+    
     const loadWelcomeFile = async () => {
       try {
         // Try welcome.md in the app bundle first
@@ -381,7 +398,7 @@ const App = () => {
     };
     
     loadWelcomeFile();
-  }, [currentPath]);
+  }, [currentPath, selectedFile, fileContent]);
 
   // Load files from the current directory
   useEffect(() => {
@@ -540,8 +557,19 @@ const App = () => {
           styles.contentArea,
           isSidebarCollapsed && styles.expandedContent
         ]}>
-          {selectedFile ? (
-            <MarkdownRenderer content={fileContent} />
+          {selectedFile && fileContent ? (
+            <>
+              <View style={styles.filePathDisplay}>
+                <Text style={{
+                  fontSize: 12,
+                  color: isDarkMode ? '#8E8E93' : '#8E8E93',
+                  marginBottom: 5
+                }}>
+                  File: {selectedFile.split('/').pop()}
+                </Text>
+              </View>
+              <MarkdownRenderer content={fileContent} />
+            </>
           ) : (
             <View style={[
               styles.noFileSelected,
@@ -645,6 +673,13 @@ const styles = StyleSheet.create({
     padding: 15,
     textAlign: 'center',
     fontStyle: 'italic',
+  },
+  filePathDisplay: {
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEEEEE',
   },
 });
 

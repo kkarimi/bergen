@@ -166,10 +166,26 @@ RCT_EXPORT_METHOD(addMenuItem:(NSString *)title
         if (fileURL) {
           NSString *filePath = [fileURL path];
           NSLog(@"Selected file: %@", filePath);
-          [self sendEventWithName:@"fileMenuAction" body:@{
-            @"action": @"fileSelected",
-            @"path": filePath
-          }];
+          
+          // Wait a bit to ensure React Native is ready to receive the event
+          dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            // Try to send the event a few times to ensure it's received
+            [self sendEventWithName:@"fileMenuAction" body:@{
+              @"action": @"fileSelected",
+              @"path": filePath
+            }];
+            
+            NSLog(@"Sent fileSelected event for path: %@", filePath);
+            
+            // Send again after a short delay as a fallback
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+              [self sendEventWithName:@"fileMenuAction" body:@{
+                @"action": @"fileSelected",
+                @"path": filePath
+              }];
+              NSLog(@"Sent fileSelected event again (backup)");
+            });
+          });
         }
       }
     }];

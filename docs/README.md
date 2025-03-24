@@ -13,6 +13,7 @@ This directory contains comprehensive documentation for the Bergen React Native 
 
 - [**Native Module Guide**](./native-module-guide.md) - Step-by-step instructions for creating native modules
 - [**Build Troubleshooting Guide**](./build-troubleshooting.md) - Solutions for common build issues
+- [**Troubleshooting Guide**](./troubleshooting.md) - Solutions for common development and runtime issues
 
 ## Getting Started
 
@@ -22,6 +23,7 @@ New to the project? Here's what to read first:
 2. Read the [**Native Code Guide**](./native-code-guide.md) to understand the native implementation
 3. For adding new native features, follow the [**Native Module Guide**](./native-module-guide.md)
 4. If you encounter build issues, consult the [**Build Troubleshooting Guide**](./build-troubleshooting.md)
+5. For general development and runtime issues, see the [**Troubleshooting Guide**](./troubleshooting.md)
 
 ## Contributing to Documentation
 
