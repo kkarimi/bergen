@@ -1,5 +1,4 @@
 import React, {useState, useEffect} from 'react';
-import { Highlight, themes } from 'prism-react-renderer'
 import {
   SafeAreaView,
   StyleSheet,
@@ -13,304 +12,17 @@ import {
 } from 'react-native';
 import RNFS from 'react-native-fs';
 
+// Import components
+import FileItem from './src/components/FileItem';
+import MarkdownViewer from './src/components/markdown/MarkdownViewer';
+
 // Get native modules
 const { NativeMenuModule, FileManagerModule } = NativeModules;
 
-// Component to render file item in sidebar
-const FileItem = ({
-  name,
-  isDirectory,
-  isSelected,
-  onPress,
-}: {
-  name: string;
-  isDirectory: boolean;
-  isSelected: boolean;
-  onPress: () => void;
-}) => {
-  const isDarkMode = useColorScheme() === 'dark';
-  
-  return (
-    <TouchableOpacity
-      style={[
-        styles.fileItem,
-        isSelected && styles.selectedFile,
-        isSelected && {backgroundColor: isDarkMode ? '#3A3A3C' : '#E5E5EA'},
-      ]}
-      onPress={onPress}>
-      <Text
-        style={[
-          styles.fileName,
-          {color: isDarkMode ? '#FFFFFF' : '#000000'},
-          isDirectory && styles.directoryName,
-        ]}>
-        {isDirectory ? '📁 ' : '📄 '}
-        {name}
-      </Text>
-    </TouchableOpacity>
-  );
-};
-
-// Unified component for markdown rendering and code highlighting
-const MarkdownViewer = ({content}: {content: string}) => {
-  const isDarkMode = useColorScheme() === 'dark';
-  
-  // Enhanced markdown styles
-  const markdownStyles = StyleSheet.create({
-    container: {
-      flex: 1,
-      paddingHorizontal: 20,
-      paddingVertical: 20,
-      backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-    },
-    heading1: {
-      fontSize: 32, 
-      fontWeight: 'bold',
-      marginBottom: 16,
-      marginTop: 24,
-      color: isDarkMode ? '#E6E6E6' : '#000000',
-      borderBottomWidth: 1,
-      borderBottomColor: isDarkMode ? '#444444' : '#EEEEEE',
-      paddingBottom: 8,
-    },
-    heading2: {
-      fontSize: 24, 
-      fontWeight: 'bold',
-      marginBottom: 12,
-      marginTop: 20,
-      color: isDarkMode ? '#E6E6E6' : '#000000',
-    },
-    heading3: {
-      fontSize: 20, 
-      fontWeight: 'bold',
-      marginBottom: 8,
-      marginTop: 16,
-      color: isDarkMode ? '#E6E6E6' : '#000000',
-    },
-    paragraph: {
-      fontSize: 16,
-      marginBottom: 12,
-      lineHeight: 24,
-      color: isDarkMode ? '#CCCCCC' : '#24292E',
-    },
-    codeBlock: {
-      marginVertical: 12,
-      backgroundColor: isDarkMode ? '#282C34' : '#F6F8FA',
-      padding: 16,
-      borderRadius: 6,
-    },
-    codeText: {
-      fontFamily: 'Menlo',
-      fontSize: 14,
-      color: isDarkMode ? '#E6E6E6' : '#24292E',
-    },
-    listItem: {
-      flexDirection: 'row', 
-      marginVertical: 4,
-      paddingLeft: 8,
-    },
-    listBullet: {
-      color: isDarkMode ? '#CCCCCC' : '#24292E',
-      marginRight: 8,
-      width: 16,
-    },
-    listText: {
-      color: isDarkMode ? '#CCCCCC' : '#24292E',
-      flex: 1,
-      fontSize: 16,
-      lineHeight: 24,
-    },
-    blockquote: {
-      borderLeftWidth: 4,
-      borderLeftColor: isDarkMode ? '#444444' : '#DDDDDD',
-      paddingLeft: 16,
-      marginVertical: 12,
-      backgroundColor: isDarkMode ? '#222222' : '#F6F8FA',
-      padding: 12,
-      borderRadius: 4,
-    },
-    blockquoteText: {
-      color: isDarkMode ? '#BBBBBB' : '#6A737D',
-      fontStyle: 'italic',
-    },
-    strong: {
-      fontWeight: 'bold',
-    },
-    emphasis: {
-      fontStyle: 'italic',
-    },
-    horizontalRule: {
-      height: 1,
-      backgroundColor: isDarkMode ? '#444444' : '#EEEEEE',
-      marginVertical: 16,
-    },
-    link: {
-      color: isDarkMode ? '#58A6FF' : '#0366D6',
-      textDecorationLine: 'underline',
-    },
-  });
-  
-  // Code highlighting component (inlined)
-  const renderCodeBlock = (code: string, language: string) => {
-    return (
-      <Highlight
-        theme={themes.shadesOfPurple}
-        code={code}
-        language={language || 'text'}
-      >
-        {({ className, style, tokens, getLineProps, getTokenProps }) => (
-          <View style={{
-            backgroundColor: style.backgroundColor,
-            padding: 10,
-            borderRadius: 5,
-          }}>
-            {tokens.map((line, i) => (
-              <View key={i} style={{flexDirection: 'row'}}>
-                <Text style={{
-                  width: 30, 
-                  color: isDarkMode ? '#666' : '#999',
-                  textAlign: 'right',
-                  paddingRight: 5,
-                  fontFamily: 'Menlo',
-                }}>
-                  {i + 1}
-                </Text>
-                <View style={{flexDirection: 'row', flexWrap: 'wrap', flex: 1}}>
-                  {line.map((token, key) => {
-                    const tokenProps = getTokenProps({ token });
-                    const tokenStyle = tokenProps.style || {};
-                    return (
-                      <Text 
-                        key={key} 
-                        style={{
-                          color: tokenStyle.color || (isDarkMode ? '#FFF' : '#000'),
-                          fontWeight: tokenStyle.fontWeight as any,
-                          fontStyle: tokenStyle.fontStyle as any,
-                          fontFamily: 'Menlo',
-                        }}
-                      >
-                        {token.content}
-                      </Text>
-                    );
-                  })}
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
-      </Highlight>
-    );
-  };
-  
-  // Markdown processing logic
-  let inCodeBlock = false;
-  let codeBlockContent = '';
-  let codeBlockLanguage = '';
-  
-  const lines = content.split('\n');
-  const processedLines: JSX.Element[] = [];
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const trimmedLine = line.trim();
-    
-    // Handle code blocks
-    if (trimmedLine.startsWith('```')) {
-      if (!inCodeBlock) {
-        inCodeBlock = true;
-        codeBlockContent = '';
-        codeBlockLanguage = trimmedLine.substring(3).trim();
-      } else {
-        // End of code block - render with syntax highlighting
-        inCodeBlock = false;
-        processedLines.push(
-          <View key={`code-${i}`} style={markdownStyles.codeBlock}>
-            {renderCodeBlock(codeBlockContent, codeBlockLanguage)}
-          </View>
-        );
-      }
-      continue;
-    }
-    
-    if (inCodeBlock) {
-      codeBlockContent += line + '\n';
-      continue;
-    }
-    
-    // Normal markdown processing
-    if (trimmedLine.startsWith('# ')) {
-      processedLines.push(
-        <Text key={`h1-${i}`} style={markdownStyles.heading1}>
-          {trimmedLine.substring(2)}
-        </Text>
-      );
-    } else if (trimmedLine.startsWith('## ')) {
-      processedLines.push(
-        <Text key={`h2-${i}`} style={markdownStyles.heading2}>
-          {trimmedLine.substring(3)}
-        </Text>
-      );
-    } else if (trimmedLine.startsWith('### ')) {
-      processedLines.push(
-        <Text key={`h3-${i}`} style={markdownStyles.heading3}>
-          {trimmedLine.substring(4)}
-        </Text>
-      );
-    } else if (trimmedLine.startsWith('> ')) {
-      // Blockquote
-      processedLines.push(
-        <View key={`blockquote-${i}`} style={markdownStyles.blockquote}>
-          <Text style={markdownStyles.blockquoteText}>
-            {trimmedLine.substring(2)}
-          </Text>
-        </View>
-      );
-    } else if (trimmedLine === '---' || trimmedLine === '___' || trimmedLine === '***') {
-      // Horizontal rule
-      processedLines.push(
-        <View key={`hr-${i}`} style={markdownStyles.horizontalRule} />
-      );
-    } else if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ')) {
-      // Unordered list item
-      processedLines.push(
-        <View key={`ul-${i}`} style={markdownStyles.listItem}>
-          <Text style={markdownStyles.listBullet}>•</Text>
-          <Text style={markdownStyles.listText}>
-            {trimmedLine.substring(2)}
-          </Text>
-        </View>
-      );
-    } else if (/^\d+\./.test(trimmedLine)) {
-      // Numbered list
-      const number = trimmedLine.split('.')[0];
-      processedLines.push(
-        <View key={`ol-${i}`} style={markdownStyles.listItem}>
-          <Text style={markdownStyles.listBullet}>{number}.</Text>
-          <Text style={markdownStyles.listText}>
-            {trimmedLine.substring(trimmedLine.indexOf('.') + 1).trim()}
-          </Text>
-        </View>
-      );
-    } else if (trimmedLine === '') {
-      // Empty line
-      processedLines.push(<View key={`space-${i}`} style={{height: 12}} />);
-    } else {
-      // Regular paragraph
-      // For simplicity, we're not handling inline formatting like bold/italic
-      processedLines.push(
-        <Text key={`p-${i}`} style={markdownStyles.paragraph}>
-          {line}
-        </Text>
-      );
-    }
-  }
-  
-  return (
-    <ScrollView style={markdownStyles.container}>
-      {processedLines}
-    </ScrollView>
-  );
-};
+// Define global openMarkdownFile function used by MarkdownLink component
+declare global {
+  var openMarkdownFile: (filePath: string, content: string) => void;
+}
 
 const App = () => {
   // Default to Documents directory for initial path
@@ -363,6 +75,21 @@ const App = () => {
     };
   }, []);
   
+  // Register a global file opener function that can be called from MarkdownLink
+  useEffect(() => {
+    // Create global handler for opening markdown files from links
+    global.openMarkdownFile = (filePath: string, content: string) => {
+      console.log('Opening markdown file from link:', filePath);
+      handleSelectedFile(filePath);
+    };
+    
+    // Clean up on unmount
+    return () => {
+      // Clean up global handler without using delete operator
+      global.openMarkdownFile = undefined as any;
+    };
+  }, []);
+  
   // Handle file selection from native file picker
   const handleSelectedFile = async (filePath: string) => {
     console.log('handleSelectedFile called with:', filePath);
@@ -378,14 +105,33 @@ const App = () => {
       console.log('Setting current path to:', parentPath);
       setCurrentPath(parentPath);
       
-      // Load file content
+      // Load file content - decode URI component to handle special characters in the path
       console.log('Reading file content...');
-      const content = await RNFS.readFile(filePath, 'utf8');
+      
+      // Handle special characters in file path by properly decoding the path
+      let decodedPath = filePath;
+      try {
+        // Only attempt to decode parts after the last / to avoid breaking the path structure
+        const lastSlashIndex = filePath.lastIndexOf('/');
+        if (lastSlashIndex !== -1) {
+          const pathBase = filePath.substring(0, lastSlashIndex + 1);
+          const fileName = filePath.substring(lastSlashIndex + 1);
+          // Decode the filename part which might contain URL-encoded characters
+          const decodedFileName = decodeURIComponent(fileName);
+          decodedPath = pathBase + decodedFileName;
+        }
+      } catch (decodeError) {
+        console.warn('Error decoding path, using original:', decodeError);
+        // Continue with original path if decoding fails
+      }
+      
+      console.log('Attempting to read file with path:', decodedPath);
+      const content = await RNFS.readFile(decodedPath, 'utf8');
       console.log('File content loaded, length:', content.length);
       
       // Set selected file and content
       console.log('Updating state with selected file and content');
-      setSelectedFile(filePath);
+      setSelectedFile(decodedPath);
       setFileContent(content);
       
       // Refresh file list
@@ -397,9 +143,9 @@ const App = () => {
         return a.name.localeCompare(b.name);
       }));
       console.log('File list updated with', dirItems.length, 'items');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load selected file:', error);
-      setFileContent('Error loading file content.');
+      setFileContent(`Error loading file content: ${error.message}`);
     }
   };
   
@@ -456,11 +202,26 @@ const App = () => {
     } else if (file.name.toLowerCase().endsWith('.md')) {
       setSelectedFile(file.path);
       try {
-        const content = await RNFS.readFile(file.path, 'utf8');
+        // Handle special characters in file path similar to handleSelectedFile
+        let decodedPath = file.path;
+        try {
+          const lastSlashIndex = file.path.lastIndexOf('/');
+          if (lastSlashIndex !== -1) {
+            const pathBase = file.path.substring(0, lastSlashIndex + 1);
+            const fileName = file.path.substring(lastSlashIndex + 1);
+            const decodedFileName = decodeURIComponent(fileName);
+            decodedPath = pathBase + decodedFileName;
+          }
+        } catch (decodeError) {
+          console.warn('Error decoding path, using original:', decodeError);
+        }
+        
+        console.log('Attempting to read file with path:', decodedPath);
+        const content = await RNFS.readFile(decodedPath, 'utf8');
         setFileContent(content);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to read file:', error);
-        setFileContent('Error loading file content.');
+        setFileContent(`Error loading file content: ${error.message}`);
       }
     }
   };
@@ -601,7 +362,7 @@ const App = () => {
                   File: {selectedFile.split('/').pop()}
                 </Text>
               </View>
-              <MarkdownViewer content={fileContent} />
+              <MarkdownViewer content={fileContent} filePath={selectedFile} />
             </>
           ) : (
             <View style={[
@@ -688,20 +449,6 @@ const styles = StyleSheet.create({
   },
   fileList: {
     flex: 1,
-  },
-  fileItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
-  },
-  selectedFile: {
-    backgroundColor: '#E5E5EA',
-  },
-  fileName: {
-    fontSize: 14,
-  },
-  directoryName: {
-    fontWeight: 'bold',
   },
   contentArea: {
     flex: 1,
