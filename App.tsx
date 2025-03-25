@@ -318,7 +318,7 @@ const App = () => {
   const [files, setFiles] = useState<RNFS.ReadDirItem[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState<string>('');
-  const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isSidebarCollapsed, setSidebarCollapsed] = useState(true);
   const isDarkMode = useColorScheme() === 'dark';
   
   // Set up native event listeners for menu actions
@@ -326,7 +326,7 @@ const App = () => {
     // Initialize native event emitter
     const menuEventEmitter = new NativeEventEmitter(NativeMenuModule);
     
-    // Listen for menu actions
+    // Listen for file menu actions
     const fileMenuSubscription = menuEventEmitter.addListener(
       'fileMenuAction',
       (event) => {
@@ -338,9 +338,22 @@ const App = () => {
       }
     );
     
+    // Listen for view menu actions
+    const viewMenuSubscription = menuEventEmitter.addListener(
+      'viewMenuAction',
+      (event) => {
+        console.log('Received view menu action:', event);
+        if (event.action === 'toggleSidebar') {
+          console.log('Toggling sidebar visibility to:', event.show);
+          setSidebarCollapsed(!event.show);
+        }
+      }
+    );
+    
     // Clean up subscriptions
     return () => {
       fileMenuSubscription.remove();
+      viewMenuSubscription.remove();
     };
   }, []);
   
@@ -384,66 +397,28 @@ const App = () => {
     }
   };
   
-  // Initialize with welcome file content if available, but only if no file is selected
+  // Initialize the file list without automatically opening welcome.md
   useEffect(() => {
     // Skip if a file is already selected
     if (selectedFile && fileContent) {
       return;
     }
     
-    const loadWelcomeFile = async () => {
+    // Just load the file list without auto-opening welcome.md
+    const loadFileList = async () => {
       try {
-        // Try welcome.md in the app bundle first
-        const bundleWelcomePath = RNFS.MainBundlePath + '/welcome.md';
-        const bundleExists = await RNFS.exists(bundleWelcomePath);
-        
-        if (bundleExists) {
-          const content = await RNFS.readFile(bundleWelcomePath, 'utf8');
-          setFileContent(content);
-          setSelectedFile(bundleWelcomePath);
-          return;
-        }
-        
-        // If not in bundle, try to find in Documents
-        const docsWelcomePath = RNFS.DocumentDirectoryPath + '/welcome.md';
-        const docsExists = await RNFS.exists(docsWelcomePath);
-        
-        if (docsExists) {
-          const content = await RNFS.readFile(docsWelcomePath, 'utf8');
-          setFileContent(content);
-          setSelectedFile(docsWelcomePath);
-          return;
-        }
-        
-        // If not found, create the welcome file in Documents
-        try {
-          // Welcome content as fallback
-          const welcomeContent = `# Welcome to Bergen Markdown Viewer\n\nSelect a markdown file from the sidebar to preview or use the Open File button to navigate to your markdown files.\n\n## Features\n\n- File system navigation\n- Markdown rendering\n- Dark mode support\n`;
-          
-          await RNFS.writeFile(docsWelcomePath, welcomeContent, 'utf8');
-          setFileContent(welcomeContent);
-          setSelectedFile(docsWelcomePath);
-          
-          // Refresh file list
-          const results = await RNFS.readDir(currentPath);
-          setFiles(results.sort((a, b) => {
-            if (a.isDirectory() && !b.isDirectory()) return -1;
-            if (!a.isDirectory() && b.isDirectory()) return 1;
-            return a.name.localeCompare(b.name);
-          }));
-        } catch (writeError) {
-          console.error('Failed to create welcome file:', writeError);
-          // Use in-memory welcome content
-          setFileContent(`# Welcome to Bergen Markdown Viewer\n\nSelect a markdown file from the sidebar to preview.`);
-        }
+        const results = await RNFS.readDir(currentPath);
+        setFiles(results.sort((a, b) => {
+          if (a.isDirectory() && !b.isDirectory()) return -1;
+          if (!a.isDirectory() && b.isDirectory()) return 1;
+          return a.name.localeCompare(b.name);
+        }));
       } catch (error) {
-        console.error('Failed to load welcome file:', error);
-        // Use in-memory welcome content as last resort
-        setFileContent(`# Welcome to Bergen Markdown Viewer\n\nSelect a markdown file from the sidebar to preview.`);
+        console.error('Failed to read directory:', error);
       }
     };
     
-    loadWelcomeFile();
+    loadFileList();
   }, [currentPath, selectedFile, fileContent]);
 
   // Load files from the current directory
@@ -622,12 +597,36 @@ const App = () => {
               {backgroundColor: isDarkMode ? '#1C1C1E' : '#F2F2F7'}
             ]}>
               <Text style={{
+                fontSize: 20, 
+                fontWeight: 'bold',
+                color: isDarkMode ? '#FFFFFF' : '#000000',
+                textAlign: 'center',
+                marginBottom: 16
+              }}>
+                Welcome to Bergen Markdown Viewer
+              </Text>
+              <Text style={{
                 fontSize: 16, 
                 color: isDarkMode ? '#8E8E93' : '#8E8E93',
-                textAlign: 'center'
+                textAlign: 'center',
+                marginBottom: 32
               }}>
-                Select a markdown file from the sidebar to preview
+                Get started by opening a markdown file
               </Text>
+              <TouchableOpacity 
+                style={[
+                  styles.openFileButton,
+                  {backgroundColor: isDarkMode ? '#2C9BF0' : '#007AFF'}
+                ]} 
+                onPress={openFilePicker}>
+                <Text style={{
+                  color: '#FFFFFF',
+                  fontSize: 16,
+                  fontWeight: 'bold'
+                }}>
+                  Open Markdown File
+                </Text>
+              </TouchableOpacity>
             </View>
           )}
         </View>
@@ -711,6 +710,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
   webView: {
     flex: 1,
@@ -726,6 +726,17 @@ const styles = StyleSheet.create({
     paddingBottom: 5,
     borderBottomWidth: 1,
     borderBottomColor: '#EEEEEE',
+  },
+  openFileButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
 });
 

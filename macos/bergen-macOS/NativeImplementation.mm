@@ -10,6 +10,16 @@ extern os_log_t bergenAppLog;
 extern os_log_t bergenFileLog;
 extern os_log_t bergenMenuLog;
 
+#pragma mark - NativeMenuModule Declaration
+
+@interface NativeMenuModule : RCTEventEmitter <RCTBridgeModule, NSMenuItemValidation>
++ (instancetype)sharedInstance;
+- (void)handleOpenFileMenuAction;
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem;
+- (void)toggleSidebar:(id)sender;
+@property (nonatomic, readonly) RCTBridge *bridge;
+@end
+
 #pragma mark - MenuManager Implementation
 
 @interface MenuManager : NSObject
@@ -40,7 +50,28 @@ extern os_log_t bergenMenuLog;
 - (void)setupApplicationMenu
 {
   // The main menu is already created from the storyboard
-  // This method can be extended to add dynamic menu items at runtime
+  // Add dynamic menu items at runtime
+  
+  // Find the View menu
+  NSMenu *mainMenu = [NSApp mainMenu];
+  for (NSMenuItem *menuItem in [mainMenu itemArray]) {
+    if ([[menuItem title] isEqualToString:@"View"]) {
+      // Create a separator if the menu already has items
+      NSMenu *viewMenu = [menuItem submenu];
+      if ([viewMenu numberOfItems] > 0) {
+        [viewMenu addItem:[NSMenuItem separatorItem]];
+      }
+      
+      // Add the "Show Sidebar" menu item
+      NSMenuItem *showSidebarItem = [[NSMenuItem alloc] initWithTitle:@"Show Sidebar" 
+                                                           action:@selector(toggleSidebar:) 
+                                                    keyEquivalent:@"S"];
+      [showSidebarItem setKeyEquivalentModifierMask:(NSEventModifierFlagCommand | NSEventModifierFlagShift)];
+      [showSidebarItem setTarget:[NativeMenuModule sharedInstance]];
+      [viewMenu addItem:showSidebarItem];
+      break;
+    }
+  }
 }
 
 - (nullable NSMenuItem *)createMenuItemWithTitle:(NSString *)title
@@ -77,13 +108,6 @@ extern os_log_t bergenMenuLog;
 
 #pragma mark - NativeMenuModule Implementation
 
-@interface NativeMenuModule : RCTEventEmitter <RCTBridgeModule, NSMenuItemValidation>
-+ (instancetype)sharedInstance;
-- (void)handleOpenFileMenuAction;
-- (BOOL)validateMenuItem:(NSMenuItem *)menuItem;
-@property (nonatomic, readonly) RCTBridge *bridge;
-@end
-
 // Static shared instance for menu actions
 static NativeMenuModule *sharedMenuModuleInstance = nil;
 
@@ -107,7 +131,7 @@ RCT_EXPORT_MODULE();
 
 - (NSArray<NSString *> *)supportedEvents
 {
-  return @[@"menuItemSelected", @"fileMenuAction"];
+  return @[@"menuItemSelected", @"fileMenuAction", @"viewMenuAction"];
 }
 
 + (BOOL)requiresMainQueueSetup
@@ -150,6 +174,27 @@ RCT_EXPORT_METHOD(addMenuItem:(NSString *)title
 {
   // Always enable menu items that target this module
   return YES;
+}
+
+- (void)toggleSidebar:(id)sender
+{
+  os_log_info(bergenMenuLog, "View -> Show Sidebar menu action triggered");
+  
+  // Toggle the menu item title between "Show Sidebar" and "Hide Sidebar"
+  NSMenuItem *menuItem = (NSMenuItem *)sender;
+  BOOL isCurrentlyShowing = [[menuItem title] isEqualToString:@"Hide Sidebar"];
+  
+  if (isCurrentlyShowing) {
+    [menuItem setTitle:@"Show Sidebar"];
+  } else {
+    [menuItem setTitle:@"Hide Sidebar"];
+  }
+  
+  // Send an event to JavaScript to notify it to toggle the sidebar
+  [self sendEventWithName:@"viewMenuAction" body:@{
+    @"action": @"toggleSidebar",
+    @"show": @(!isCurrentlyShowing)
+  }];
 }
 
 - (void)handleOpenFileMenuAction

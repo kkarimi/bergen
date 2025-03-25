@@ -1,6 +1,10 @@
 #import "AppDelegate.h"
 #import <React/RCTBundleURLProvider.h>
 
+// Forward declarations from NativeImplementation.mm
+@class NativeMenuModule;
+@class MenuManager;
+
 // Include the native implementation
 #import "NativeImplementation.mm"
 
