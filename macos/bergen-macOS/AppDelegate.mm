@@ -234,6 +234,7 @@ os_log_t bergenMenuLog;
   for (NSMenuItem *item in [mainMenu itemArray]) {
     os_log_debug(bergenMenuLog, "Menu item: %{public}@", [item title]);
     
+    // Handle File menu
     if ([[item title] isEqualToString:@"File"]) {
       NSMenu *fileMenu = [item submenu];
       os_log_debug(bergenMenuLog, "File menu has %lu items", (unsigned long)[fileMenu numberOfItems]);
@@ -259,7 +260,33 @@ os_log_t bergenMenuLog;
                 [fileItem isEnabled]);
         }
       }
-      break;
+    } 
+    // Handle View menu
+    else if ([[item title] isEqualToString:@"View"]) {
+      NSMenu *viewMenu = [item submenu];
+      os_log_debug(bergenMenuLog, "View menu has %lu items", (unsigned long)[viewMenu numberOfItems]);
+      
+      // Add our own Show Sidebar item directly
+      if ([viewMenu numberOfItems] > 0) {
+        [viewMenu addItem:[NSMenuItem separatorItem]];
+      }
+      
+      // Create and add a custom sidebar toggle menu item
+      NSMenuItem *showSidebarItem = [[NSMenuItem alloc] initWithTitle:@"Show Sidebar" 
+                                                        action:@selector(toggleSidebar:) 
+                                                 keyEquivalent:@"S"];
+      [showSidebarItem setKeyEquivalentModifierMask:(NSEventModifierFlagCommand | NSEventModifierFlagShift)];
+      [showSidebarItem setTarget:menuModule];
+      [showSidebarItem setEnabled:YES]; 
+      [showSidebarItem setTag:1000]; 
+      
+      [viewMenu addItem:showSidebarItem];
+      
+      // Store a reference for later menu state updates
+      [menuModule setSidebarMenuItem:showSidebarItem];
+      
+      os_log_info(bergenMenuLog, "Added Show Sidebar menu item with target: %{public}@", 
+                  menuModule ? @"valid" : @"nil");
     }
   }
 }

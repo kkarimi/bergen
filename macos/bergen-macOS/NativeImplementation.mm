@@ -17,7 +17,12 @@ extern os_log_t bergenMenuLog;
 - (void)handleOpenFileMenuAction;
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem;
 - (void)toggleSidebar:(id)sender;
+- (void)setSidebarMenuItem:(NSMenuItem *)menuItem;
+- (void)updateSidebarMenuState:(BOOL)isCollapsed;
+
 @property (nonatomic, readonly) RCTBridge *bridge;
+@property (nonatomic, weak) NSMenuItem *sidebarMenuItem;
+@property (nonatomic, assign) BOOL isSidebarCollapsed;
 @end
 
 #pragma mark - MenuManager Implementation
@@ -50,28 +55,8 @@ extern os_log_t bergenMenuLog;
 - (void)setupApplicationMenu
 {
   // The main menu is already created from the storyboard
-  // Add dynamic menu items at runtime
-  
-  // Find the View menu
-  NSMenu *mainMenu = [NSApp mainMenu];
-  for (NSMenuItem *menuItem in [mainMenu itemArray]) {
-    if ([[menuItem title] isEqualToString:@"View"]) {
-      // Create a separator if the menu already has items
-      NSMenu *viewMenu = [menuItem submenu];
-      if ([viewMenu numberOfItems] > 0) {
-        [viewMenu addItem:[NSMenuItem separatorItem]];
-      }
-      
-      // Add the "Show Sidebar" menu item
-      NSMenuItem *showSidebarItem = [[NSMenuItem alloc] initWithTitle:@"Show Sidebar" 
-                                                           action:@selector(toggleSidebar:) 
-                                                    keyEquivalent:@"S"];
-      [showSidebarItem setKeyEquivalentModifierMask:(NSEventModifierFlagCommand | NSEventModifierFlagShift)];
-      [showSidebarItem setTarget:[NativeMenuModule sharedInstance]];
-      [viewMenu addItem:showSidebarItem];
-      break;
-    }
-  }
+  // Dynamic menu items are now added in AppDelegate's buildMenu method
+  os_log_info(bergenMenuLog, "MenuManager setupApplicationMenu - menu setup delegated to AppDelegate");
 }
 
 - (nullable NSMenuItem *)createMenuItemWithTitle:(NSString *)title
@@ -115,6 +100,15 @@ static NativeMenuModule *sharedMenuModuleInstance = nil;
 
 + (instancetype)sharedInstance
 {
+  // Create an instance if it doesn't exist yet
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    if (!sharedMenuModuleInstance) {
+      sharedMenuModuleInstance = [[NativeMenuModule alloc] init];
+      os_log_info(bergenMenuLog, "Created NativeMenuModule singleton instance");
+    }
+  });
+  
   return sharedMenuModuleInstance;
 }
 
@@ -125,8 +119,38 @@ RCT_EXPORT_MODULE();
   self = [super init];
   if (self) {
     sharedMenuModuleInstance = self;
+    _isSidebarCollapsed = YES; // Default state: sidebar is collapsed
   }
   return self;
+}
+
+- (void)setSidebarMenuItem:(NSMenuItem *)menuItem
+{
+  os_log_info(bergenMenuLog, "Setting sidebar menu item reference");
+  _sidebarMenuItem = menuItem;
+  
+  // Update the initial menu state
+  [self updateSidebarMenuState:_isSidebarCollapsed];
+}
+
+- (void)updateSidebarMenuState:(BOOL)isCollapsed
+{
+  os_log_info(bergenMenuLog, "Updating sidebar menu state: isCollapsed=%d", isCollapsed);
+  _isSidebarCollapsed = isCollapsed;
+  
+  // Update the menu item title based on the current state
+  if (_sidebarMenuItem) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      if (isCollapsed) {
+        [self->_sidebarMenuItem setTitle:@"Show Sidebar"];
+      } else {
+        [self->_sidebarMenuItem setTitle:@"Hide Sidebar"];
+      }
+      [self->_sidebarMenuItem setEnabled:YES];
+    });
+  } else {
+    os_log_error(bergenMenuLog, "Sidebar menu item reference is nil");
+  }
 }
 
 - (NSArray<NSString *> *)supportedEvents
@@ -160,6 +184,15 @@ RCT_EXPORT_METHOD(addMenuItem:(NSString *)title
   });
 }
 
+// Allow React Native to update the sidebar menu state
+RCT_EXPORT_METHOD(updateSidebarState:(BOOL)isCollapsed)
+{
+  os_log_info(bergenMenuLog, "RN called updateSidebarState: %d", isCollapsed);
+  dispatch_async(dispatch_get_main_queue(), ^{
+    [self updateSidebarMenuState:isCollapsed];
+  });
+}
+
 - (void)menuItemSelected:(NSMenuItem *)sender
 {
   NSString *identifier = sender.representedObject;
@@ -172,7 +205,16 @@ RCT_EXPORT_METHOD(addMenuItem:(NSString *)title
 // Implement NSMenuItemValidation protocol to enable menu items
 - (BOOL)validateMenuItem:(NSMenuItem *)menuItem
 {
-  // Always enable menu items that target this module
+  // Always enable all menu items, regardless of what they are
+  os_log_info(bergenMenuLog, "🔍 MENU VALIDATION: title=%{public}@, action=%{public}@, tag=%ld, enabled=%d", 
+              [menuItem title], 
+              NSStringFromSelector([menuItem action]),
+              (long)[menuItem tag],
+              [menuItem isEnabled]);
+  
+  // Force enable the menu item
+  [menuItem setEnabled:YES];
+  
   return YES;
 }
 
@@ -180,20 +222,28 @@ RCT_EXPORT_METHOD(addMenuItem:(NSString *)title
 {
   os_log_info(bergenMenuLog, "View -> Show Sidebar menu action triggered");
   
-  // Toggle the menu item title between "Show Sidebar" and "Hide Sidebar"
-  NSMenuItem *menuItem = (NSMenuItem *)sender;
-  BOOL isCurrentlyShowing = [[menuItem title] isEqualToString:@"Hide Sidebar"];
+  // Toggle the current sidebar state
+  _isSidebarCollapsed = !_isSidebarCollapsed;
   
-  if (isCurrentlyShowing) {
-    [menuItem setTitle:@"Show Sidebar"];
+  // Update the menu item directly - no need to call updateSidebarMenuState
+  NSMenuItem *menuItem = (NSMenuItem *)sender;
+  if (menuItem) {
+    if (_isSidebarCollapsed) {
+      [menuItem setTitle:@"Show Sidebar"];
+    } else {
+      [menuItem setTitle:@"Hide Sidebar"];
+    }
+    // Force enable the menu item
+    [menuItem setEnabled:YES];
   } else {
-    [menuItem setTitle:@"Hide Sidebar"];
+    os_log_error(bergenMenuLog, "toggleSidebar: sender is not a valid NSMenuItem");
   }
   
   // Send an event to JavaScript to notify it to toggle the sidebar
+  // Note: in this context, show=YES means sidebar visible (!isCollapsed)
   [self sendEventWithName:@"viewMenuAction" body:@{
     @"action": @"toggleSidebar",
-    @"show": @(!isCurrentlyShowing)
+    @"show": @(!_isSidebarCollapsed)
   }];
 }
 

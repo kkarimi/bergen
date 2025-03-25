@@ -345,7 +345,13 @@ const App = () => {
         console.log('Received view menu action:', event);
         if (event.action === 'toggleSidebar') {
           console.log('Toggling sidebar visibility to:', event.show);
-          setSidebarCollapsed(!event.show);
+          
+          // Update UI state when menu action occurs
+          const newCollapsedState = !event.show; // event.show=true means sidebar should be visible
+          setSidebarCollapsed(newCollapsedState);
+          
+          // No need to call updateSidebarState here since the event came from native side
+          // which already updated its own state
         }
       }
     );
@@ -495,7 +501,13 @@ const App = () => {
 
   // Toggle sidebar collapsed state
   const toggleSidebar = () => {
-    setSidebarCollapsed(!isSidebarCollapsed);
+    const newState = !isSidebarCollapsed;
+    setSidebarCollapsed(newState);
+    
+    // Sync the state with native menu
+    if (NativeMenuModule && NativeMenuModule.updateSidebarState) {
+      NativeMenuModule.updateSidebarState(newState);
+    }
   };
 
   return (
@@ -595,16 +607,7 @@ const App = () => {
             <View style={[
               styles.noFileSelected,
               {backgroundColor: isDarkMode ? '#1C1C1E' : '#F2F2F7'}
-            ]}>
-              <Text style={{
-                fontSize: 20, 
-                fontWeight: 'bold',
-                color: isDarkMode ? '#FFFFFF' : '#000000',
-                textAlign: 'center',
-                marginBottom: 16
-              }}>
-                Welcome to Bergen Markdown Viewer
-              </Text>
+            ]}>              
               <Text style={{
                 fontSize: 16, 
                 color: isDarkMode ? '#8E8E93' : '#8E8E93',
@@ -624,7 +627,7 @@ const App = () => {
                   fontSize: 16,
                   fontWeight: 'bold'
                 }}>
-                  Open Markdown File
+                  Open
                 </Text>
               </TouchableOpacity>
             </View>
