@@ -6,22 +6,32 @@ import RNFS from 'react-native-fs';
 const MarkdownLink = ({
   href, 
   children, 
-  currentFilePath
+  currentFilePath,
+  scrollToHeading
 }: {
   href: string; 
   children: React.ReactNode;
   currentFilePath?: string;
+  scrollToHeading?: (id: string) => void;
 }) => {
   const isDarkMode = useColorScheme() === 'dark';
   
   const handlePress = async () => {
     if (href) {
+      // Handle fragment/anchor links within the current document
+      if (href.startsWith('#') && scrollToHeading) {
+        const headingId = href.substring(1); // Remove the # character
+        console.log('Scrolling to heading with id:', headingId);
+        scrollToHeading(headingId);
+        return;
+      }
+      
       // Handle different URL types
       let urlToOpen = href;
       
       try {
         // Handle relative paths by resolving them against the current file path
-        if (href.startsWith('./') || href.startsWith('../') || !href.includes(':')) {
+        if (href.startsWith('./') || href.startsWith('../') || (!href.includes(':') && !href.startsWith('#'))) {
           console.log('Handling relative link:', href);
           
           if (currentFilePath) {
@@ -44,6 +54,14 @@ const MarkdownLink = ({
             
             console.log('Resolved path:', resolvedPath);
             
+            // Handle filename with hash/fragment
+            let fragment = '';
+            if (resolvedPath.includes('#')) {
+              const [pathPart, hashPart] = resolvedPath.split('#');
+              resolvedPath = pathPart;
+              fragment = hashPart;
+            }
+            
             // Check if the file exists before trying to open it
             if (await RNFS.exists(resolvedPath)) {
               console.log('File exists, attempting to open');
@@ -54,16 +72,26 @@ const MarkdownLink = ({
                 const content = await RNFS.readFile(resolvedPath, 'utf8');
                 
                 // Dispatch an event to notify the app to open this file
-                // We'll need to implement this event handling in App.tsx
                 const openMarkdownFile = (global as any).openMarkdownFile;
                 if (openMarkdownFile) {
                   openMarkdownFile(resolvedPath, content);
+                  
+                  // If there was a fragment and it's the same file, wait briefly then scroll
+                  if (fragment && resolvedPath === currentFilePath && scrollToHeading) {
+                    setTimeout(() => {
+                      scrollToHeading(fragment);
+                    }, 300); // Small delay to allow render
+                  }
+                  
                   return; // Exit early as we're handling this in-app
                 }
               }
               
               // For external file URLs
               urlToOpen = `file://${resolvedPath}`;
+              if (fragment) {
+                urlToOpen += `#${fragment}`;
+              }
             } else {
               console.warn('Resolved file does not exist:', resolvedPath);
             }

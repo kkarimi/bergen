@@ -1,8 +1,16 @@
 import React from 'react';
-import { Text, useColorScheme } from 'react-native';
+import { Text, useColorScheme, View } from 'react-native';
 
 // Heading renderer with different heading levels
-const MarkdownHeading = ({level, children}: {level: number; children: React.ReactNode}) => {
+const MarkdownHeading = ({
+  level,
+  children,
+  id
+}: {
+  level: number;
+  children: React.ReactNode;
+  id?: string;
+}) => {
   const isDarkMode = useColorScheme() === 'dark';
   
   const styles = {
@@ -62,7 +70,11 @@ const MarkdownHeading = ({level, children}: {level: number; children: React.Reac
     6: styles.h6,
   }[level] || styles.h6;
   
-  return <Text style={headingStyle}>{children}</Text>;
+  return (
+    <View id={id}>
+      <Text style={headingStyle}>{children}</Text>
+    </View>
+  );
 };
 
 export default MarkdownHeading;

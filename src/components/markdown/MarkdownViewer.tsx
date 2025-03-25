@@ -1,5 +1,5 @@
-import React from 'react';
-import { ScrollView, StyleSheet, useColorScheme, Text, View } from 'react-native';
+import React, { useRef } from 'react';
+import { ScrollView, StyleSheet, useColorScheme, View } from 'react-native';
 
 // Import markdown components
 import CodeBlock from './CodeBlock';
@@ -14,6 +14,9 @@ import MarkdownHr from './MarkdownHr';
 // Unified Markdown renderer component
 const MarkdownViewer = ({content, filePath}: {content: string, filePath?: string}) => {
   const isDarkMode = useColorScheme() === 'dark';
+  const scrollViewRef = useRef<ScrollView>(null);
+  // Create a map of heading IDs to their position in the document
+  const headingPositionMap = useRef<Map<string, number>>(new Map());
   
   const markdownStyles = StyleSheet.create({
     container: {
@@ -97,6 +100,12 @@ const MarkdownViewer = ({content, filePath}: {content: string, filePath?: string
                 key={`link-${i}`} 
                 href={linkUrl}
                 currentFilePath={filePath}
+                scrollToHeading={(id) => {
+                  const position = headingPositionMap.current.get(id);
+                  if (position !== undefined && scrollViewRef.current) {
+                    scrollViewRef.current.scrollTo({ y: position, animated: true });
+                  }
+                }}
               >
                 {processInlineElements(linkText)}
               </MarkdownLink>
@@ -126,6 +135,12 @@ const MarkdownViewer = ({content, filePath}: {content: string, filePath?: string
   let codeBlockContent = '';
   let codeBlockLanguage = '';
   
+  // Clear heading position map
+  headingPositionMap.current.clear();
+  
+  // Track the current line height to calculate positions
+  let currentPosition = 0;
+  
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmedLine = line.trim();
@@ -142,6 +157,7 @@ const MarkdownViewer = ({content, filePath}: {content: string, filePath?: string
         processedLines.push(
           <CodeBlock key={`code-${i}`} language={codeBlockLanguage} value={codeBlockContent} />
         );
+        currentPosition += 100; // Approximate height for code block
       }
       continue;
     }
@@ -158,12 +174,14 @@ const MarkdownViewer = ({content, filePath}: {content: string, filePath?: string
           {processInlineElements(trimmedLine.substring(2))}
         </MarkdownBlockquote>
       );
+      currentPosition += 30; // Approximate height
       continue;
     }
     
     // Handle horizontal rules
     if (trimmedLine === '---' || trimmedLine === '___' || trimmedLine === '***') {
       processedLines.push(<MarkdownHr key={`hr-${i}`} />);
+      currentPosition += 20; // Approximate height
       continue;
     }
     
@@ -174,6 +192,7 @@ const MarkdownViewer = ({content, filePath}: {content: string, filePath?: string
           {processInlineElements(trimmedLine.substring(2))}
         </MarkdownListItem>
       );
+      currentPosition += 30; // Approximate height
       continue;
     }
     
@@ -185,31 +204,62 @@ const MarkdownViewer = ({content, filePath}: {content: string, filePath?: string
           {processInlineElements(trimmedLine.substring(trimmedLine.indexOf('.') + 1).trim())}
         </MarkdownListItem>
       );
+      currentPosition += 30; // Approximate height
       continue;
     }
     
     // Handle headings
     if (trimmedLine.startsWith('# ')) {
+      const headingText = trimmedLine.substring(2);
+      const headingId = generateHeadingId(headingText);
+      // Store the position of the heading
+      headingPositionMap.current.set(headingId, currentPosition);
+      
       processedLines.push(
-        <MarkdownHeading key={`h1-${i}`} level={1}>
-          {processInlineElements(trimmedLine.substring(2))}
-        </MarkdownHeading>
+        <View key={`h1-container-${i}`} onLayout={(event) => {
+          // Update the position when the component is actually rendered
+          headingPositionMap.current.set(headingId, event.nativeEvent.layout.y);
+        }}>
+          <MarkdownHeading key={`h1-${i}`} level={1} id={headingId}>
+            {processInlineElements(headingText)}
+          </MarkdownHeading>
+        </View>
       );
+      currentPosition += 60; // Approximate height for h1
     } else if (trimmedLine.startsWith('## ')) {
+      const headingText = trimmedLine.substring(3);
+      const headingId = generateHeadingId(headingText);
+      headingPositionMap.current.set(headingId, currentPosition);
+      
       processedLines.push(
-        <MarkdownHeading key={`h2-${i}`} level={2}>
-          {processInlineElements(trimmedLine.substring(3))}
-        </MarkdownHeading>
+        <View key={`h2-container-${i}`} onLayout={(event) => {
+          headingPositionMap.current.set(headingId, event.nativeEvent.layout.y);
+        }}>
+          <MarkdownHeading key={`h2-${i}`} level={2} id={headingId}>
+            {processInlineElements(headingText)}
+          </MarkdownHeading>
+        </View>
       );
+      currentPosition += 50; // Approximate height for h2
     } else if (trimmedLine.startsWith('### ')) {
+      const headingText = trimmedLine.substring(4);
+      const headingId = generateHeadingId(headingText);
+      headingPositionMap.current.set(headingId, currentPosition);
+      
       processedLines.push(
-        <MarkdownHeading key={`h3-${i}`} level={3}>
-          {processInlineElements(trimmedLine.substring(4))}
-        </MarkdownHeading>
+        <View key={`h3-container-${i}`} onLayout={(event) => {
+          headingPositionMap.current.set(headingId, event.nativeEvent.layout.y);
+        }}>
+          <MarkdownHeading key={`h3-${i}`} level={3} id={headingId}>
+            {processInlineElements(headingText)}
+          </MarkdownHeading>
+        </View>
       );
+      currentPosition += 40; // Approximate height for h3
     } else if (trimmedLine === '') {
       // Empty line
       processedLines.push(<View key={`space-${i}`} style={{height: 12}} />);
+      currentPosition += 12;
     } else {
       // Regular paragraph
       processedLines.push(
@@ -217,14 +267,28 @@ const MarkdownViewer = ({content, filePath}: {content: string, filePath?: string
           {processInlineElements(line)}
         </MarkdownText>
       );
+      currentPosition += 20; // Approximate height for paragraph
     }
   }
 
   return (
-    <ScrollView style={markdownStyles.container}>
+    <ScrollView 
+      ref={scrollViewRef}
+      style={markdownStyles.container}
+    >
       {processedLines}
     </ScrollView>
   );
+};
+
+// Helper function to generate a heading ID from text
+const generateHeadingId = (text: string): string => {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '') // Remove non-word chars
+    .replace(/\s+/g, '-')     // Replace spaces with hyphens
+    .replace(/-+/g, '-')      // Replace multiple hyphens with single hyphen
+    .trim();                   // Trim leading/trailing hyphens
 };
 
 export default MarkdownViewer;
