@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+import { Highlight, themes } from 'prism-react-renderer'
 import {
   SafeAreaView,
   StyleSheet,
@@ -50,8 +51,8 @@ const FileItem = ({
   );
 };
 
-// Component to display markdown content
-const MarkdownRenderer = ({content}: {content: string}) => {
+// Unified component for markdown rendering and code highlighting
+const MarkdownViewer = ({content}: {content: string}) => {
   const isDarkMode = useColorScheme() === 'dark';
   
   // Enhanced markdown styles
@@ -93,12 +94,10 @@ const MarkdownRenderer = ({content}: {content: string}) => {
       color: isDarkMode ? '#CCCCCC' : '#24292E',
     },
     codeBlock: {
-      backgroundColor: isDarkMode ? '#2D2D2D' : '#F6F8FA',
+      marginVertical: 12,
+      backgroundColor: isDarkMode ? '#282C34' : '#F6F8FA',
       padding: 16,
       borderRadius: 6,
-      marginVertical: 12,
-      borderWidth: 1,
-      borderColor: isDarkMode ? '#444444' : '#E1E4E8',
     },
     codeText: {
       fontFamily: 'Menlo',
@@ -151,10 +150,62 @@ const MarkdownRenderer = ({content}: {content: string}) => {
     },
   });
   
-  // More advanced markdown processing
+  // Code highlighting component (inlined)
+  const renderCodeBlock = (code: string, language: string) => {
+    return (
+      <Highlight
+        theme={themes.shadesOfPurple}
+        code={code}
+        language={language || 'text'}
+      >
+        {({ className, style, tokens, getLineProps, getTokenProps }) => (
+          <View style={{
+            backgroundColor: style.backgroundColor,
+            padding: 10,
+            borderRadius: 5,
+          }}>
+            {tokens.map((line, i) => (
+              <View key={i} style={{flexDirection: 'row'}}>
+                <Text style={{
+                  width: 30, 
+                  color: isDarkMode ? '#666' : '#999',
+                  textAlign: 'right',
+                  paddingRight: 5,
+                  fontFamily: 'Menlo',
+                }}>
+                  {i + 1}
+                </Text>
+                <View style={{flexDirection: 'row', flexWrap: 'wrap', flex: 1}}>
+                  {line.map((token, key) => {
+                    const tokenProps = getTokenProps({ token });
+                    const tokenStyle = tokenProps.style || {};
+                    return (
+                      <Text 
+                        key={key} 
+                        style={{
+                          color: tokenStyle.color || (isDarkMode ? '#FFF' : '#000'),
+                          fontWeight: tokenStyle.fontWeight as any,
+                          fontStyle: tokenStyle.fontStyle as any,
+                          fontFamily: 'Menlo',
+                        }}
+                      >
+                        {token.content}
+                      </Text>
+                    );
+                  })}
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+      </Highlight>
+    );
+  };
+  
+  // Markdown processing logic
   let inCodeBlock = false;
   let codeBlockContent = '';
-  let codeBlockType = '';
+  let codeBlockLanguage = '';
   
   const lines = content.split('\n');
   const processedLines: JSX.Element[] = [];
@@ -168,17 +219,13 @@ const MarkdownRenderer = ({content}: {content: string}) => {
       if (!inCodeBlock) {
         inCodeBlock = true;
         codeBlockContent = '';
-        codeBlockType = trimmedLine.substring(3).trim();
+        codeBlockLanguage = trimmedLine.substring(3).trim();
       } else {
-        // End of code block
+        // End of code block - render with syntax highlighting
         inCodeBlock = false;
         processedLines.push(
           <View key={`code-${i}`} style={markdownStyles.codeBlock}>
-            <Text style={markdownStyles.codeText}>
-              {codeBlockType === 'mermaid' 
-                ? '🔄 Mermaid diagram (visualization not available in simplified view)' 
-                : codeBlockContent}
-            </Text>
+            {renderCodeBlock(codeBlockContent, codeBlockLanguage)}
           </View>
         );
       }
@@ -264,7 +311,6 @@ const MarkdownRenderer = ({content}: {content: string}) => {
     </ScrollView>
   );
 };
-
 
 const App = () => {
   // Default to Documents directory for initial path
@@ -568,7 +614,7 @@ const App = () => {
                   File: {selectedFile.split('/').pop()}
                 </Text>
               </View>
-              <MarkdownRenderer content={fileContent} />
+              <MarkdownViewer content={fileContent} />
             </>
           ) : (
             <View style={[

@@ -6,7 +6,8 @@
   "scripts": {
     "android": "react-native run-android",
     "macos": "react-native run-macos",
-    "build-macos": "./build-macos.sh",
+    "macos-fast": "./start-macos-fast.sh",
+    "build": "./build-macos.sh",
     "release": "./release.sh --bump-type patch",
     "lint": "eslint .",
     "start": "react-native start",
@@ -14,6 +15,7 @@
   },
   "dependencies": {
     "mermaid": "^11.5.0",
+    "prism-react-renderer": "^2.4.1",
     "react": "18.3.1",
     "react-markdown": "^10.1.0",
     "react-native": "0.76.0",
