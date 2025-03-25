@@ -13,6 +13,7 @@ This document provides an overview of the native macOS code in the Bergen React 
 - [Adding New Native Functionality](#adding-new-native-functionality)
 - [Building and Debugging](#building-and-debugging)
 - [Common Issues](#common-issues)
+- [Logging with os_log](#logging-with-os_log)
 
 ## Overview
 
@@ -229,12 +230,18 @@ yarn macos
    - Run the app from Xcode
 
 2. **Logging**:
-   - Use `NSLog(@"message")` for simple logging
+   - Use structured logging with `os_log` for better organization and performance:
+     ```objc
+     os_log_info(bergenAppLog, "Application starting up");
+     os_log_error(bergenFileLog, "File not found: %{public}@", filePath);
+     os_log_debug(bergenMenuLog, "Menu item selected: %{public}@", itemTitle);
+     ```
+   - See the [Logging with os_log](#logging-with-os_log) section for detailed information
    - For React Native bridge logging, use `RCTLogInfo(@"message")`
 
 3. **Common Debug Tools**:
    - Xcode's Debug Navigator
-   - Console.app for system logs
+   - Console.app for viewing structured logs with filtering options
    - Instruments for performance analysis
 
 ## Common Issues
@@ -271,6 +278,71 @@ As the project evolves, consider:
 2. **SwiftUI** integration for modern UI components
 3. **Apple Silicon** optimizations
 4. **Sandboxing** for Mac App Store distribution
+
+## Logging with os_log
+
+Bergen uses Apple's unified logging system (`os_log`) for structured logging in the native code. This provides better performance, organization, and filtering capabilities than traditional NSLog.
+
+### Setup
+
+1. **Subsystem and Categories**
+
+   The app defines a logging subsystem in `Info.plist`:
+   ```xml
+   <key>OSLogSubsystemIdentifier</key>
+   <string>com.bergen.app</string>
+   ```
+
+   And creates specialized logging categories:
+   ```objc
+   // Define log categories
+   os_log_t bergenAppLog = os_log_create("com.bergen.app", "app");      // General app events
+   os_log_t bergenFileLog = os_log_create("com.bergen.app", "files");   // File operations
+   os_log_t bergenMenuLog = os_log_create("com.bergen.app", "menu");    // Menu interactions
+   ```
+
+2. **Log Levels**
+
+   The logger supports different severity levels:
+   ```objc
+   os_log_info(bergenAppLog, "Application starting up");                // Normal events
+   os_log_debug(bergenFileLog, "Processing file data");                 // Debug information
+   os_log_error(bergenFileLog, "File not found: %{public}@", filePath); // Error conditions
+   ```
+
+3. **Privacy Formatting**
+
+   Use the following formatting for sensitive data:
+   ```objc
+   // Public data (visible in logs)
+   os_log_info(bergenFileLog, "File type: %{public}@", fileExtension);
+   
+   // Private data (redacted in logs unless special access)
+   os_log_debug(bergenFileLog, "File content hash: %{private}@", contentHash);
+   ```
+
+### Viewing Logs
+
+To view Bergen's logs in Console.app:
+
+1. Open Console.app (located in `/Applications/Utilities/`)
+2. Select "bergen" from the sidebar under "App" section
+3. Filter logs using:
+   - `subsystem:com.bergen.app` - All Bergen logs
+   - `category:files` - Only file operation logs
+   - `category:menu` - Only menu interaction logs
+   - `category:app` - Only general application logs
+   - Combine with level filters: `level:error` or `level:debug`
+
+### Benefits
+
+- **Performance**: Minimal overhead compared to NSLog
+- **Organization**: Categorized logs for easier debugging
+- **Filtering**: Powerful filtering in Console.app
+- **Security**: Privacy controls for sensitive information
+- **Integration**: Works with macOS system logging
+
+For example, to debug file opening issues, you can filter for `category:files level:error` in Console.app to quickly find problems.
 
 ---
 

@@ -9,6 +9,7 @@
     "macos-fast": "./start-macos-fast.sh",
     "build": "./build-macos.sh",
     "release": "./release.sh --bump-type patch",
+    "release:major": "./release.sh --bump-type major",
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest"
