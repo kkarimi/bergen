@@ -10,6 +10,11 @@
     "build": "./build-macos.sh",
     "release": "./release.sh --bump-type patch",
     "release:major": "./release.sh --bump-type major",
+    "release:minor": "./release.sh --bump-type minor",
+    "release:cask": "./release.sh --bump-type patch --publish-cask",
+    "release:cask:minor": "./release.sh --bump-type minor --publish-cask",
+    "release:cask:major": "./release.sh --bump-type major --publish-cask",
+    "publish-cask": "./publish-cask.sh",
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest"

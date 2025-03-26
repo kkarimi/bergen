@@ -41,6 +41,16 @@ if [ -n "$APP_PATH" ]; then
     ln -sf "$APP_PATH" ./bergen.app
     echo "🔗 Symlink created at ./bergen.app for easy access"
 
+    # Install to Applications directory
+    echo "📲 Installing to Applications directory..."
+    if [ -d "/Applications/bergen.app" ]; then
+        echo "🗑️ Removing existing installation..."
+        rm -rf "/Applications/bergen.app"
+    fi
+    echo "📋 Copying app to Applications directory..."
+    cp -R bergen.app /Applications/
+    echo "✅ App installed to /Applications/bergen.app"
+
     # Create a zip file for distribution
     echo "📦 Creating zip file for distribution..."
     VERSION=$(node -p "require('./package.json').version")

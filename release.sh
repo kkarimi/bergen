@@ -5,16 +5,18 @@ set -e
 
 # Function to print usage
 print_usage() {
-    echo "Usage: $0 [--bump-type <patch|minor|major>]"
+    echo "Usage: $0 [--bump-type <patch|minor|major>] [--publish-cask]"
     echo "Default bump type is patch"
     exit 1
 }
 
 # Parse command line arguments
 BUMP_TYPE="patch"
+PUBLISH_CASK=false
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --bump-type) BUMP_TYPE="$2"; shift ;;
+        --publish-cask) PUBLISH_CASK=true ;;
         *) print_usage ;;
     esac
     shift
@@ -117,4 +119,19 @@ gh release create "v${NEW_VERSION}" \
 echo "✅ Draft release v${NEW_VERSION} created successfully!"
 echo "📦 Binary uploaded to GitHub releases"
 echo "🌎 Please review the release at: $REPO_URL/releases"
-echo "   Once reviewed, you can publish it from the GitHub web interface" 
+echo "   Once reviewed, you can publish it from the GitHub web interface"
+
+# If --publish-cask flag is provided, publish to Homebrew cask
+if $PUBLISH_CASK; then
+    echo "🍺 Publishing to Homebrew cask..."
+    
+    # Check if publish-cask.sh exists and is executable
+    if [ ! -x "./publish-cask.sh" ]; then
+        echo "❌ publish-cask.sh not found or not executable"
+        echo "   Please make it executable with: chmod +x ./publish-cask.sh"
+        exit 1
+    fi
+    
+    # Publish the cask
+    ./publish-cask.sh
+fi 
