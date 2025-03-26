@@ -133,6 +133,7 @@ const MarkdownViewer = ({content}) => {
 - **Tables**: Properly aligned with headers
 - **Horizontal rules**: Styled dividers
 - **Images**: If needed
+- **Mermaid diagrams**: Rendering flow charts, sequence diagrams, etc.
 
 ## Testing and Validation
 
@@ -173,3 +174,54 @@ Horizontal rule above
 ```
 
 This enhanced markdown rendering will significantly improve the user experience by providing proper formatting for all standard markdown elements.
+
+## Mermaid Diagram Support
+
+Mermaid is a diagramming and charting tool that renders text definitions into diagrams. To implement Mermaid support:
+
+1. Create a specialized `MermaidDiagram.tsx` component:
+```jsx
+import React from 'react';
+import { WebView } from 'react-native-webview';
+
+const MermaidDiagram = ({ value }) => {
+  // Use WebView to render the diagram with mermaid.js
+  const html = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+        <script>
+          mermaid.initialize({ startOnLoad: true });
+        </script>
+      </head>
+      <body>
+        <div class="mermaid">${value}</div>
+      </body>
+    </html>
+  `;
+  
+  return <WebView source={{ html }} />;
+};
+```
+
+2. Modify the markdown parser to detect Mermaid code blocks:
+```jsx
+if (line.startsWith('```mermaid')) {
+  // Extract mermaid content until end of code block
+  const mermaidContent = extractUntilEndOfCodeBlock();
+  return <MermaidDiagram value={mermaidContent} />;
+}
+```
+
+3. Ensure proper styling for both light and dark mode
+
+Example Mermaid syntax:
+```mermaid
+graph TD
+    A[Start] --> B{Is it a markdown file?}
+    B -- Yes --> C[Display with formatting]
+    B -- No --> D[Can't preview]
+```
+
+Mermaid supports many diagram types including flowcharts, sequence diagrams, class diagrams, state diagrams, and more.

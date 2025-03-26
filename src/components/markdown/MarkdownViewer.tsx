@@ -10,6 +10,7 @@ import { MarkdownText, MarkdownStrong, MarkdownEmphasis } from './TextElements';
 import MarkdownListItem from './MarkdownListItem';
 import MarkdownBlockquote from './MarkdownBlockquote';
 import MarkdownHr from './MarkdownHr';
+import MermaidDiagram from './MermaidDiagram';
 
 // Unified Markdown renderer component
 const MarkdownViewer = ({content, filePath}: {content: string, filePath?: string}) => {
@@ -152,12 +153,18 @@ const MarkdownViewer = ({content, filePath}: {content: string, filePath?: string
         codeBlockContent = '';
         codeBlockLanguage = trimmedLine.substring(3).trim();
       } else {
-        // End of code block - render with syntax highlighting
+        // End of code block - check if it's a mermaid diagram or regular code
         inCodeBlock = false;
-        processedLines.push(
-          <CodeBlock key={`code-${i}`} language={codeBlockLanguage} value={codeBlockContent} />
-        );
-        currentPosition += 100; // Approximate height for code block
+        if (codeBlockLanguage.toLowerCase() === 'mermaid') {
+          processedLines.push(
+            <MermaidDiagram key={`mermaid-${i}`} value={codeBlockContent} />
+          );
+        } else {
+          processedLines.push(
+            <CodeBlock key={`code-${i}`} language={codeBlockLanguage} value={codeBlockContent} />
+          );
+        }
+        currentPosition += 300; // Approximate height for code block or diagram
       }
       continue;
     }
