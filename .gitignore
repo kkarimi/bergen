@@ -76,3 +76,6 @@ yarn-error.log
 *.app
 *.zip
 homebrew-cask/
+.env
+cert/
+homebrew-bergen/

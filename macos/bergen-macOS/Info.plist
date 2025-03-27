@@ -42,7 +42,7 @@
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.0</string>
+	<string>0.1.5</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>LSMinimumSystemVersion</key>
@@ -69,7 +69,7 @@
 	<key>NSSupportsSuddenTermination</key>
 	<true/>
 	<key>OSLogSubsystemIdentifier</key>
-	<string>com.bergen.app</string>
+	<string>com.zendo.bergen</string>
 	<key>UTImportedTypeDeclarations</key>
 	<array>
 		<dict>

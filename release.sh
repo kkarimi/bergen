@@ -98,7 +98,7 @@ git commit -m "chore: bump version to v${NEW_VERSION}"
 
 # Build the app
 echo "🏗 Building the app..."
-./build-macos.sh
+./scripts/build-macos.sh
 
 ZIP_NAME="bergen-macos-v${NEW_VERSION}.zip"
 
@@ -126,12 +126,12 @@ if $PUBLISH_CASK; then
     echo "🍺 Publishing to Homebrew cask..."
     
     # Check if publish-cask.sh exists and is executable
-    if [ ! -x "./publish-cask.sh" ]; then
-        echo "❌ publish-cask.sh not found or not executable"
-        echo "   Please make it executable with: chmod +x ./publish-cask.sh"
+    if [ ! -x "./scripts/publish-cask.sh" ]; then
+        echo "❌ scripts/publish-cask.sh not found or not executable"
+        echo "   Please make it executable with: chmod +x ./scripts/publish-cask.sh"
         exit 1
     fi
     
     # Publish the cask
-    ./publish-cask.sh
+    ./scripts/publish-cask.sh
 fi 

@@ -116,14 +116,16 @@ cask "$APP_NAME" do
   name "Bergen"
   desc "Lightweight markdown reader"
   homepage "$REPO_URL"
-
+  
+  depends_on macos: ">= :big_sur"
+  
   app "bergen.app"
 
   zap trash: [
     "~/Library/Application Support/bergen",
     "~/Library/Caches/bergen",
-    "~/Library/Preferences/com.${REPO_OWNER}.bergen.plist",
-    "~/Library/Saved Application State/com.${REPO_OWNER}.bergen.savedState",
+    "~/Library/Preferences/com.zendo.bergen.plist",
+    "~/Library/Saved Application State/com.zendo.bergen.savedState",
   ]
 end
 EOL

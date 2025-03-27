@@ -15,6 +15,13 @@ This directory contains comprehensive documentation for the Bergen React Native 
 - [**Build Troubleshooting Guide**](./build-troubleshooting.md) - Solutions for common build issues
 - [**Troubleshooting Guide**](./troubleshooting.md) - Solutions for common development and runtime issues
 
+### Distribution and Signing
+
+- [**Signing Instructions**](./signing-instructions.md) - Guide for code signing and notarizing Bergen for distribution
+- [**Homebrew Distribution**](./homebrew-distribution.md) - Guide for distributing Bergen via Homebrew
+- [**App Store Info**](./app-store-info.md) - Important information for App Store distribution
+- [**App Store Submission**](./app-store-submission.md) - Complete guide for submitting Bergen to the Mac App Store
+
 ## Getting Started
 
 New to the project? Here's what to read first:
