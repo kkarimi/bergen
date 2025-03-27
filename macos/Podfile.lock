@@ -1214,7 +1214,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-webview (13.13.4):
+  - react-native-webview (13.13.5):
     - DoubleConversion
     - glog
     - RCT-Folly (= 2024.01.01.00)
@@ -1723,7 +1723,7 @@ SPEC CHECKSUMS:
   React-logger: c7920f649b2eebd6b57335c3ca16e6fad12b3157
   React-Mapbuffer: 333db22c2dd2aa02884ff281f6dd88acdb1a724a
   React-microtasksnativemodule: 9747efe241e2673d4fbfe459380ac5991a5ea5e7
-  react-native-webview: dadbf1b696859d48ea81764cd1894a1d7761c458
+  react-native-webview: 07c3c28ec190d360f9a6456954d9ffea68df3a49
   React-nativeconfig: 13f6738231304fd9b0459cc9317b5c41998f6fdd
   React-NativeModulesApple: 5d09bcc05b61dc67e55413ee6eacb238074968a7
   React-perflogger: 4cd5989f0e85db6f0a4cb043228b27622be05cf8

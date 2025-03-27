@@ -15,7 +15,7 @@
 
 
 
-**A beautiful, minimal Markdown reader for macOS built with React Native**
+**A beautiful, minimal Markdown reader for macOS **
 
 • [Getting Started](#getting-started) 
 • [Features](#features) 

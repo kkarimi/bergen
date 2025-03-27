@@ -1,6 +1,6 @@
 # Welcome to Bergen Markdown reader
 
-This is a beautiful, minimal Markdown reader for macOS built with React Native.
+This is a beautiful, minimal Markdown reader for macOS .
 
 ## Features
 

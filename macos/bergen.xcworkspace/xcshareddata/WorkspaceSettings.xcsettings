@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>BuildSystemType</key>
-	<string>Original</string>
+	<string>Latest</string>
 	<key>DerivedDataCustomLocation</key>
 	<string>macos/DerivedData</string>
 	<key>DerivedDataLocationStyle</key>
@@ -13,4 +13,4 @@
 	<key>LiveSourceIssuesEnabled</key>
 	<true/>
 </dict>
-</plist> 
+</plist>

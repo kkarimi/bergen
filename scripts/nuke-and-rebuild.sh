@@ -120,7 +120,7 @@ echo "✅ App rebuild and signing complete!"
 echo "The app has been completely rebuilt and should be properly signed."
 echo ""
 echo "📦 Creating zip archive..."
-VERSION=$(node -p "require('./package.json').version")
+VERSION=$(node -p "require('../package.json').version")
 ZIP_NAME="bergen-macos-v${VERSION}.zip"
 ditto -c -k --keepParent bergen.app "$ZIP_NAME"
 echo "✅ Zip file created at $ZIP_NAME"

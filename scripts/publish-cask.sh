@@ -37,7 +37,7 @@ if ! git rev-parse --is-inside-work-tree &> /dev/null; then
 fi
 
 # Get current version from package.json
-VERSION=$(node -p "require('./package.json').version")
+VERSION=$(node -p "require('../package.json').version")
 echo -e "${BLUE}📝 Current version: ${VERSION}${NC}"
 
 # Get GitHub repository information

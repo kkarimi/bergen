@@ -8,6 +8,7 @@
     "macos": "react-native run-macos",
     "macos-fast": "./start-macos-fast.sh",
     "build": "./scripts/build-macos.sh",
+    "clean-build": "./scripts/clean-build.sh",
     "fix-signing": "./scripts/fix-unsealed-contents.sh",
     "super-fix": "./scripts/super-fix-signing.sh",
     "nuke-and-rebuild": "./scripts/nuke-and-rebuild.sh",

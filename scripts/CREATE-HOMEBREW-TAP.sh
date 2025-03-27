@@ -35,7 +35,7 @@ else
     echo -e "${YELLOW}Creating a new cask file instead...${NC}"
     
     # Get current version from package.json
-    VERSION=$(node -p "require('./package.json').version")
+    VERSION=$(node -p "require('../package.json').version")
     
     # Calculate SHA256 of the latest zip file
     ZIP_NAME="bergen-macos-v${VERSION}.zip"
@@ -89,7 +89,7 @@ brew install ${REPO_OWNER}/bergen/bergen
 
 ## About Bergen
 
-Bergen is a beautiful, minimal Markdown reader for macOS built with React Native.
+Bergen is a beautiful, minimal Markdown reader for macOS .
 
 For more information, visit the [Bergen repository](https://github.com/${REPO_OWNER}/bergen).
 EOL

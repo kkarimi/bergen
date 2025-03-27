@@ -64,7 +64,7 @@ if ! git diff-index --quiet HEAD --; then
 fi
 
 # Get current version from package.json
-CURRENT_VERSION=$(node -p "require('./package.json').version")
+CURRENT_VERSION=$(node -p "require('../package.json').version")
 echo "📝 Current version: $CURRENT_VERSION"
 
 # Bump version using node
@@ -87,9 +87,9 @@ echo "🔼 Bumping version from $CURRENT_VERSION to $NEW_VERSION"
 # Update version in package.json
 node -e "
 const fs = require('fs');
-const package = require('./package.json');
+const package = require('../package.json');
 package.version = '${NEW_VERSION}';
-fs.writeFileSync('./package.json', JSON.stringify(package, null, 2) + '\n');
+fs.writeFileSync('../package.json', JSON.stringify(package, null, 2) + '\n');
 "
 
 # Commit the version bump

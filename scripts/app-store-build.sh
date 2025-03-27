@@ -92,7 +92,7 @@ if [ -d "$APP_PATH" ]; then
 
     # Create a PKG file for App Store submission
     echo "📦 Creating PKG file for App Store submission..."
-    VERSION=$(node -p "require('./package.json').version")
+    VERSION=$(node -p "require('../package.json').version")
     PKG_NAME="bergen-appstore-v${VERSION}.pkg"
     
     # Check if we should use app-specific certificate

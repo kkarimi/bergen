@@ -22,7 +22,7 @@ if [ -z "$APPLE_ID" ] || [ -z "$APPLE_ID_PASSWORD" ]; then
 fi
 
 # Check if a built PKG file already exists
-VERSION=$(node -p "require('./package.json').version")
+VERSION=$(node -p "require('../package.json').version")
 PKG_NAME="bergen-appstore-v${VERSION}.pkg"
 
 if [ ! -f "$PKG_NAME" ]; then

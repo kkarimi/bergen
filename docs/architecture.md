@@ -14,7 +14,7 @@ This document outlines the high-level architecture of the Bergen application, in
 
 ## Overview
 
-Bergen is a cross-platform application built with React Native, supporting iOS, Android, and macOS. The application follows a component-based architecture with a clear separation between UI, business logic, and platform-specific functionality.
+Bergen is a cross-platform application , supporting iOS, Android, and macOS. The application follows a component-based architecture with a clear separation between UI, business logic, and platform-specific functionality.
 
 ## Technology Stack
 

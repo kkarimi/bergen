@@ -59,7 +59,7 @@ if [ -n "$APP_PATH" ]; then
     
     # Use the nuke-and-rebuild script for signing
     echo "🔄 Running nuke-and-rebuild.sh for reliable signing..."
-    if ./scripts/nuke-and-rebuild.sh; then
+    if ./nuke-and-rebuild.sh; then
         echo "📋 Installing rebuilt and signed app..."
         cp -R ./bergen.app /Applications/bergen.app
         echo "✅ Rebuilt and signed app installed to /Applications/bergen.app"
@@ -159,7 +159,7 @@ if [ -n "$APP_PATH" ]; then
     fi
 
     # Check if a zip file already exists (from nuke-and-rebuild)
-    VERSION=$(node -p "require('./package.json').version")
+    VERSION=$(node -p "require('../package.json').version")
     ZIP_NAME="bergen-macos-v${VERSION}.zip"
     
     if [ ! -f "$ZIP_NAME" ]; then
