@@ -37,7 +37,7 @@ Documentation should:
 
 ## Building the Documentation
 
-The documentation is written in Markdown and can be viewed directly on GitHub or using any Markdown viewer.
+The documentation is written in Markdown and can be viewed directly on GitHub or using any Markdown reader.
 
 ---
 

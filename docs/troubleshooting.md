@@ -1,6 +1,6 @@
 # Bergen Troubleshooting Guide
 
-This document covers common issues and their solutions when developing or using the Bergen Markdown Viewer application.
+This document covers common issues and their solutions when developing or using the Bergen Markdown reader application.
 
 ## React Native to Native Communication Issues
 

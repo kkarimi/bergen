@@ -1,6 +1,6 @@
-# Welcome to Bergen Markdown Viewer
+# Welcome to Bergen Markdown reader
 
-This is a beautiful, minimal Markdown viewer for macOS built with React Native.
+This is a beautiful, minimal Markdown reader for macOS built with React Native.
 
 ## Features
 
@@ -61,4 +61,4 @@ function greet() {
 3. The preview will automatically render markdown formatting
 4. Dark mode is supported based on your system settings
 
-Enjoy using Bergen Markdown Viewer!
+Enjoy using Bergen Markdown reader!
