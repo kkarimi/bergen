@@ -1,7 +1,7 @@
 # Bergen
 <div align="center">
 
-<img src="./assets/icon.png" alt="Bergen Logo" width="120"/>
+<img src="./assets/newicon.png" alt="Bergen Logo" width="120"/>
 
 
 

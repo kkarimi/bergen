@@ -4,10 +4,26 @@ This document explains the build issues encountered during the native code integ
 
 ## Table of Contents
 
+- [Icon Generation](#icon-generation)
 - [Issue: Linker Error for Native Code](#issue-linker-error-for-native-code)
 - [Solution: Consolidated Implementation Approach](#solution-consolidated-implementation-approach)
 - [Build Process Improvements](#build-process-improvements)
 - [Common Build Issues](#common-build-issues)
+
+## Icon Generation
+
+If you need to update the app icons:
+
+1. Place your source icon (PNG format, minimum 1024x1024 pixels) in the `assets/` directory
+2. Run the icon generation script:
+   ```bash
+   ./generate-icons.sh [path_to_your_icon.png]
+   ```
+   If no path is provided, it will use `./assets/newicon.png` by default.
+3. The script will:
+   - Generate all required icon sizes for macOS
+   - Place them in the correct AppIcon.appiconset directory
+   - Update the README.md reference if needed
 
 ## Issue: Linker Error for Native Code
 
