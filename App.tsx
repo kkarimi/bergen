@@ -359,7 +359,7 @@ const App = () => {
                   color: isDarkMode ? '#8E8E93' : '#8E8E93',
                   marginBottom: 5
                 }}>
-                  File: {selectedFile.split('/').pop()}
+                  {selectedFile.split('/').pop()}
                 </Text>
               </View>
               <MarkdownViewer content={fileContent} filePath={selectedFile} />

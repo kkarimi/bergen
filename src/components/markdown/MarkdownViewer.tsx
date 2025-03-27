@@ -24,6 +24,7 @@ const MarkdownViewer = ({content, filePath}: {content: string, filePath?: string
       flex: 1,
       paddingHorizontal: 20,
       paddingVertical: 20,
+      paddingLeft: 20,
       backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
     },
   });
@@ -164,7 +165,7 @@ const MarkdownViewer = ({content, filePath}: {content: string, filePath?: string
             <CodeBlock key={`code-${i}`} language={codeBlockLanguage} value={codeBlockContent} />
           );
         }
-        currentPosition += 300; // Approximate height for code block or diagram
+        currentPosition += 600; // Approximate height for code block or diagram
       }
       continue;
     }
