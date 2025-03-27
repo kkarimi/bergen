@@ -71,7 +71,7 @@ echo -e "${GREEN}✅ SHA256: ${SHA256}${NC}"
 HOMEBREW_TAP_DIR="$(brew --repository)/Library/Taps/homebrew/homebrew-cask"
 if [ ! -d "$HOMEBREW_TAP_DIR" ]; then
     echo -e "${YELLOW}🔍 Homebrew Cask tap not found, cloning...${NC}"
-    brew tap homebrew/cask
+    # brew tap homebrew/cask
 fi
 
 # Fork the homebrew-cask repository if not already forked
@@ -114,7 +114,7 @@ cask "$APP_NAME" do
 
   url "$REPO_URL/releases/download/v#{version}/$ZIP_NAME"
   name "Bergen"
-  desc "A React Native macOS app for Markdown editing"
+  desc "A React Native macOS app for Markdown viewing"
   homepage "$REPO_URL"
 
   app "bergen.app"
@@ -141,7 +141,7 @@ gh pr create --repo homebrew/homebrew-cask \
     --title "Add $APP_NAME $VERSION" \
     --body "This PR adds a cask for $APP_NAME version $VERSION. 
     
-$APP_NAME is a React Native macOS app for Markdown editing.
+$APP_NAME is a React Native macOS app for Markdown viewing.
 
 **App homepage:** $REPO_URL" \
     --base master \
