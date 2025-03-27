@@ -114,7 +114,7 @@ cask "$APP_NAME" do
 
   url "$REPO_URL/releases/download/v#{version}/$ZIP_NAME"
   name "Bergen"
-  desc "A React Native macOS app for Markdown viewing"
+  desc "Lightweight markdown reader"
   homepage "$REPO_URL"
 
   app "bergen.app"
@@ -123,7 +123,7 @@ cask "$APP_NAME" do
     "~/Library/Application Support/bergen",
     "~/Library/Caches/bergen",
     "~/Library/Preferences/com.${REPO_OWNER}.bergen.plist",
-    "~/Library/Saved Application State/com.${REPO_OWNER}.bergen.savedState"
+    "~/Library/Saved Application State/com.${REPO_OWNER}.bergen.savedState",
   ]
 end
 EOL
@@ -141,7 +141,7 @@ gh pr create --repo homebrew/homebrew-cask \
     --title "Add $APP_NAME $VERSION" \
     --body "This PR adds a cask for $APP_NAME version $VERSION. 
     
-$APP_NAME is a React Native macOS app for Markdown viewing.
+$APP_NAME is a lightweight markdown reader.
 
 **App homepage:** $REPO_URL" \
     --base master \
