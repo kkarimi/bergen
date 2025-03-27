@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { View, ActivityIndicator, useColorScheme, StyleSheet } from 'react-native';
+import type React from 'react';
+import { useState } from 'react';
+import { ActivityIndicator, StyleSheet, View, useColorScheme } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 interface MermaidDiagramProps {
@@ -68,7 +69,7 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ value }) => {
       borderRadius: 5,
       overflow: 'hidden',
       marginVertical: 10,
-      backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+      backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF'
     },
     loadingContainer: {
       position: 'absolute',
@@ -78,12 +79,12 @@ const MermaidDiagram: React.FC<MermaidDiagramProps> = ({ value }) => {
       bottom: 0,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+      backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF'
     },
     webView: {
       backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
-      height: 300,
-    },
+      height: 300
+    }
   });
 
   return (
