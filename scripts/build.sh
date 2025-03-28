@@ -123,7 +123,14 @@ else
 fi
 
 # -----------------------
-# STEP 5: Archive the app
+# STEP 5: Copy app to /Applications
+# -----------------------
+echo -e "\n${YELLOW}📦 Copying app to /Applications${NC}"
+rm -rf "/Applications/Bergen.app"
+cp -R "$PROJECT_ROOT/bergen.app" "/Applications/Bergen.app"
+
+# -----------------------
+# STEP 6: Archive the app
 # -----------------------
 echo -e "\n${YELLOW}📦 Archiving the app (for .xcarchive)${NC}"
 
@@ -155,7 +162,7 @@ else
 fi
 
 # -----------------------
-# STEP 6: Export the app
+# STEP 7: Export the app
 # -----------------------
 # echo -e "\n${YELLOW}📦 Exporting the .xcarchive${NC}"
 
