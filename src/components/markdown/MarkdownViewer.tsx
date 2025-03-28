@@ -272,6 +272,60 @@ const MarkdownViewer = ({ content, filePath }: { content: string; filePath?: str
         </View>
       );
       currentPosition += 40; // Approximate height for h3
+    } else if (trimmedLine.startsWith('#### ')) {
+      const headingText = trimmedLine.substring(5);
+      const headingId = generateHeadingId(headingText);
+      headingPositionMap.current.set(headingId, currentPosition);
+
+      processedLines.push(
+        <View
+          key={`h4-container-${i}`}
+          onLayout={(event) => {
+            headingPositionMap.current.set(headingId, event.nativeEvent.layout.y);
+          }}
+        >
+          <MarkdownHeading key={`h4-${i}`} level={4} id={headingId}>
+            {processInlineElements(headingText)}
+          </MarkdownHeading>
+        </View>
+      );
+      currentPosition += 35; // Approximate height for h4
+    } else if (trimmedLine.startsWith('##### ')) {
+      const headingText = trimmedLine.substring(6);
+      const headingId = generateHeadingId(headingText);
+      headingPositionMap.current.set(headingId, currentPosition);
+
+      processedLines.push(
+        <View
+          key={`h5-container-${i}`}
+          onLayout={(event) => {
+            headingPositionMap.current.set(headingId, event.nativeEvent.layout.y);
+          }}
+        >
+          <MarkdownHeading key={`h5-${i}`} level={5} id={headingId}>
+            {processInlineElements(headingText)}
+          </MarkdownHeading>
+        </View>
+      );
+      currentPosition += 30; // Approximate height for h5
+    } else if (trimmedLine.startsWith('###### ')) {
+      const headingText = trimmedLine.substring(7);
+      const headingId = generateHeadingId(headingText);
+      headingPositionMap.current.set(headingId, currentPosition);
+
+      processedLines.push(
+        <View
+          key={`h6-container-${i}`}
+          onLayout={(event) => {
+            headingPositionMap.current.set(headingId, event.nativeEvent.layout.y);
+          }}
+        >
+          <MarkdownHeading key={`h6-${i}`} level={6} id={headingId}>
+            {processInlineElements(headingText)}
+          </MarkdownHeading>
+        </View>
+      );
+      currentPosition += 25; // Approximate height for h6
     } else if (trimmedLine === '') {
       // Empty line
       processedLines.push(<View key={`space-${i}`} style={{ height: 12 }} />);
