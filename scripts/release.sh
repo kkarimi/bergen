@@ -110,18 +110,20 @@ if [ ! -f "$ZIP_NAME" ]; then
     exit 1
 fi
 
+# Create Git Tag
+git tag "v${NEW_VERSION}"
+git push origin "v${NEW_VERSION}"
+
 # Create GitHub release
 echo "🚀 Creating GitHub release v${NEW_VERSION}..."
 gh release create "v${NEW_VERSION}" \
     --title "Bergen v${NEW_VERSION}" \
-    --notes "Release notes for version ${NEW_VERSION}" \
-    --draft \
+    --notes "Release notes for version ${NEW_VERSION}" \    
     "$ZIP_NAME"
 
-echo "✅ Draft release v${NEW_VERSION} created successfully!"
+echo "✅ Release v${NEW_VERSION} created successfully!"
 echo "📦 Binary uploaded to GitHub releases"
 echo "🌎 Please review the release at: $REPO_URL/releases"
-echo "   Once reviewed, you can publish it from the GitHub web interface"
 
 # If --publish-cask flag is provided, publish to Homebrew cask
 if $PUBLISH_CASK; then
