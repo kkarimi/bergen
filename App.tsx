@@ -481,7 +481,7 @@ const App = () => {
                     fontWeight: 'bold'
                   }}
                 >
-                  Open
+                  📂 Open File
                 </Text>
               </TouchableOpacity>
             </View>

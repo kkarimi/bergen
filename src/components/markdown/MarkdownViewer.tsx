@@ -130,6 +130,13 @@ const MarkdownViewer = ({ content, filePath }: { content: string; filePath?: str
     return elements;
   };
 
+  // Function to scroll to the top of the document
+  const scrollToTop = () => {
+    if (scrollViewRef.current) {
+      scrollViewRef.current.scrollTo({ y: 0, animated: true });
+    }
+  };
+
   // Process the markdown content line-by-line
   const lines = content.split('\n');
   const processedLines: JSX.Element[] = [];
@@ -230,7 +237,7 @@ const MarkdownViewer = ({ content, filePath }: { content: string; filePath?: str
             headingPositionMap.current.set(headingId, event.nativeEvent.layout.y);
           }}
         >
-          <MarkdownHeading key={`h1-${i}`} level={1} id={headingId}>
+          <MarkdownHeading key={`h1-${i}`} level={1} id={headingId} scrollToTop={scrollToTop}>
             {processInlineElements(headingText)}
           </MarkdownHeading>
         </View>
@@ -248,7 +255,7 @@ const MarkdownViewer = ({ content, filePath }: { content: string; filePath?: str
             headingPositionMap.current.set(headingId, event.nativeEvent.layout.y);
           }}
         >
-          <MarkdownHeading key={`h2-${i}`} level={2} id={headingId}>
+          <MarkdownHeading key={`h2-${i}`} level={2} id={headingId} scrollToTop={scrollToTop}>
             {processInlineElements(headingText)}
           </MarkdownHeading>
         </View>
@@ -266,7 +273,7 @@ const MarkdownViewer = ({ content, filePath }: { content: string; filePath?: str
             headingPositionMap.current.set(headingId, event.nativeEvent.layout.y);
           }}
         >
-          <MarkdownHeading key={`h3-${i}`} level={3} id={headingId}>
+          <MarkdownHeading key={`h3-${i}`} level={3} id={headingId} scrollToTop={scrollToTop}>
             {processInlineElements(headingText)}
           </MarkdownHeading>
         </View>
@@ -284,7 +291,7 @@ const MarkdownViewer = ({ content, filePath }: { content: string; filePath?: str
             headingPositionMap.current.set(headingId, event.nativeEvent.layout.y);
           }}
         >
-          <MarkdownHeading key={`h4-${i}`} level={4} id={headingId}>
+          <MarkdownHeading key={`h4-${i}`} level={4} id={headingId} scrollToTop={scrollToTop}>
             {processInlineElements(headingText)}
           </MarkdownHeading>
         </View>
@@ -302,7 +309,7 @@ const MarkdownViewer = ({ content, filePath }: { content: string; filePath?: str
             headingPositionMap.current.set(headingId, event.nativeEvent.layout.y);
           }}
         >
-          <MarkdownHeading key={`h5-${i}`} level={5} id={headingId}>
+          <MarkdownHeading key={`h5-${i}`} level={5} id={headingId} scrollToTop={scrollToTop}>
             {processInlineElements(headingText)}
           </MarkdownHeading>
         </View>
@@ -320,7 +327,7 @@ const MarkdownViewer = ({ content, filePath }: { content: string; filePath?: str
             headingPositionMap.current.set(headingId, event.nativeEvent.layout.y);
           }}
         >
-          <MarkdownHeading key={`h6-${i}`} level={6} id={headingId}>
+          <MarkdownHeading key={`h6-${i}`} level={6} id={headingId} scrollToTop={scrollToTop}>
             {processInlineElements(headingText)}
           </MarkdownHeading>
         </View>
