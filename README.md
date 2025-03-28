@@ -51,13 +51,6 @@ brew tap kkarimi/bergen
 brew install kkarimi/bergen/bergen
 ```
 
-Alternatively, you can attempt to install from the main Homebrew repository, but this may not work until the repository gains more popularity:
-
-```bash
-# Standard installation (may not work due to popularity requirements)
-brew install bergen
-```
-
 ### Manual Installation
 
 Download the latest release from [GitHub Releases](https://github.com/kkarimi/bergen/releases).

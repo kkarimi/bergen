@@ -42,7 +42,7 @@ else
     if [ -f "${ZIP_NAME}" ]; then
         SHA256=$(shasum -a 256 "${ZIP_NAME}" | awk '{print $1}')
     else
-        echo -e "${RED}Error: ZIP file ${ZIP_NAME} not found. Please run build-macos.sh first.${NC}"
+        echo -e "${RED}Error: ZIP file ${ZIP_NAME} not found. Please run yarn build first.${NC}"
         exit 1
     fi
     

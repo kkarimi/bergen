@@ -22,7 +22,7 @@
     "publish-cask": "./scripts/publish-cask.sh",
     "appstore-build": "./scripts/app-store-build.sh",
     "appstore-release": "./scripts/app-store-release.sh",
-    "create-homebrew-tap": "./scripts/CREATE-HOMEBREW-TAP.sh",
+    "create-homebrew-tap": "./scripts/create-homebrew-tap.sh",
     "lint": "biome check --write .",
     "lint:fix": "biome check --fix --unsafe .",
     "start": "react-native start",
