@@ -119,7 +119,7 @@ echo "🚀 Creating GitHub release v${NEW_VERSION}..."
 gh release create "v${NEW_VERSION}" \
     --title "Bergen v${NEW_VERSION}" \
     --notes "Release notes for version ${NEW_VERSION}" \
-    --draft \    
+    --draft \
     "$ZIP_NAME"
 
 echo "✅ Release v${NEW_VERSION} created successfully!"
