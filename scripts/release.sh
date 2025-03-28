@@ -10,6 +10,9 @@ print_usage() {
     exit 1
 }
 
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$PROJECT_ROOT"
+
 # Parse command line arguments
 BUMP_TYPE="patch"
 PUBLISH_CASK=false
@@ -62,9 +65,8 @@ if ! git diff-index --quiet HEAD --; then
     echo "❌ Working directory is not clean. Please commit or stash changes first."
     exit 1
 fi
-
 # Get current version from package.json
-CURRENT_VERSION=$(node -p "require('../package.json').version")
+CURRENT_VERSION=$(node -p "require('./package.json').version")
 echo "📝 Current version: $CURRENT_VERSION"
 
 # Bump version using node
@@ -87,9 +89,9 @@ echo "🔼 Bumping version from $CURRENT_VERSION to $NEW_VERSION"
 # Update version in package.json
 node -e "
 const fs = require('fs');
-const package = require('../package.json');
+const package = require('./package.json');
 package.version = '${NEW_VERSION}';
-fs.writeFileSync('../package.json', JSON.stringify(package, null, 2) + '\n');
+fs.writeFileSync('./package.json', JSON.stringify(package, null, 2) + '\n');
 "
 
 # Commit the version bump
@@ -98,7 +100,7 @@ git commit -m "chore: bump version to v${NEW_VERSION}"
 
 # Build the app
 echo "🏗 Building the app..."
-./scripts/build-macos.sh
+./scripts/build.sh
 
 ZIP_NAME="bergen-macos-v${NEW_VERSION}.zip"
 
