@@ -1,6 +1,6 @@
 # Bergen Native Code Guide
 
-This document provides an overview of the native macOS code in the Bergen React Native project. It explains the architecture, dependencies, and design decisions to help developers understand and extend the native functionality.
+This document provides an overview of the native macOS code in the Bergen. It explains the architecture, dependencies, and design decisions to help developers understand and extend the native functionality.
 
 ## Table of Contents
 

@@ -1,6 +1,6 @@
 # Bergen Documentation
 
-This directory contains comprehensive documentation for the Bergen React Native project.
+This directory contains comprehensive documentation for the Bergen app.
 
 ## Available Documentation
 
