@@ -79,3 +79,5 @@ homebrew-cask/
 .env
 cert/
 homebrew-bergen/
+*.bak
+**/**/*..*.bak

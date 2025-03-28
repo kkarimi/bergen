@@ -26,7 +26,7 @@ echo -e "${YELLOW}Creating directories...${NC}"
 mkdir -p "${CASKS_DIR}"
 
 # Copy the cask file
-CASK_FILE="/Users/nima/dev/personal/bergen/homebrew-cask/Casks/b/bergen.rb"
+CASK_FILE="homebrew-cask/Casks/b/bergen.rb"
 if [ -f "${CASK_FILE}" ]; then
     echo -e "${YELLOW}Copying cask file...${NC}"
     cp "${CASK_FILE}" "${CASKS_DIR}/bergen.rb"

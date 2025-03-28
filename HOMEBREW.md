@@ -43,7 +43,7 @@ mkdir -p homebrew-bergen/Casks
 cd homebrew-bergen
 
 # Copy your cask file
-cp /Users/nima/dev/personal/bergen/homebrew-cask/Casks/b/bergen.rb Casks/
+cp Casks/b/bergen.rb Casks/
 
 # Initialize git repository
 git init

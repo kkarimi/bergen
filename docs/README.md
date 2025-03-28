@@ -13,6 +13,9 @@ This directory contains comprehensive documentation for the Bergen React Native 
 
 - [**Native Module Guide**](./native-module-guide.md) - Step-by-step instructions for creating native modules
 - [**Build Troubleshooting Guide**](./build-troubleshooting.md) - Solutions for common build issues
+  - [Build Modes and Options](./build-troubleshooting.md#build-modes-and-options) - Different ways to build the app
+  - [Specialized Build Scripts](./build-troubleshooting.md#specialized-build-scripts) - Available build scripts for different scenarios
+  - [Sandbox Permission Issues](./build-troubleshooting.md#sandbox-permission-issues) - Fixing common permission errors
 - [**Troubleshooting Guide**](./troubleshooting.md) - Solutions for common development and runtime issues
 
 ### Distribution and Signing
