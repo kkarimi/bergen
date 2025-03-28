@@ -75,10 +75,11 @@ const MarkdownLink = ({
                 // Read the file content
                 const content = await RNFS.readFile(resolvedPath, 'utf8');
 
-                // Dispatch an event to notify the app to open this file
+                // Dispatch an event to notify the app to open this file in a new tab
                 const openMarkdownFile = (global as any).openMarkdownFile;
+                console.log('Calling openMarkdownFile with path:', resolvedPath);
                 if (openMarkdownFile) {
-                  openMarkdownFile(resolvedPath, content);
+                  openMarkdownFile(resolvedPath, content, true);
 
                   // If there was a fragment and it's the same file, wait briefly then scroll
                   if (fragment && resolvedPath === currentFilePath && scrollToHeading) {

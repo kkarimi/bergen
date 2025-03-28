@@ -25,8 +25,10 @@ const MarkdownViewer = ({ content, filePath }: { content: string; filePath?: str
       flex: 1,
       paddingHorizontal: 20,
       paddingVertical: 20,
-      paddingLeft: 20,
-      backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF'
+      paddingLeft: 0,
+      backgroundColor: isDarkMode ? '#1E1E1E' : '#FFFFFF',
+      marginLeft: 20,
+      marginRight: 20
     }
   });
 

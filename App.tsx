@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
+  Alert,
   NativeEventEmitter,
   NativeModules,
   SafeAreaView,
@@ -14,24 +15,41 @@ import RNFS from 'react-native-fs';
 
 // Import components
 import FileItem from './src/components/FileItem';
+import TabBar from './src/components/TabBar';
 import MarkdownViewer from './src/components/markdown/MarkdownViewer';
 
 // Get native modules
 const { NativeMenuModule, FileManagerModule } = NativeModules;
 
+// Define tab data interface
+interface TabData {
+  id: string;
+  filePath: string;
+  fileName: string;
+  content: string;
+}
+
 // Define global openMarkdownFile function used by MarkdownLink component
 declare global {
-  var openMarkdownFile: (filePath: string, content: string) => void;
+  var openMarkdownFile: (filePath: string, content: string, newTab?: boolean) => void;
 }
 
 const App = () => {
   // Default to Documents directory for initial path
   const [currentPath, setCurrentPath] = useState(RNFS.DocumentDirectoryPath);
   const [files, setFiles] = useState<RNFS.ReadDirItem[]>([]);
-  const [selectedFile, setSelectedFile] = useState<string | null>(null);
-  const [fileContent, setFileContent] = useState<string>('');
+  const [openTabs, setOpenTabs] = useState<TabData[]>([]);
+  const [activeTabIndex, setActiveTabIndex] = useState<number>(-1);
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(true);
   const isDarkMode = useColorScheme() === 'dark';
+
+  // Helper function to get the currently active tab
+  const getActiveTab = (): TabData | undefined => {
+    if (activeTabIndex >= 0 && activeTabIndex < openTabs.length) {
+      return openTabs[activeTabIndex];
+    }
+    return undefined;
+  };
 
   // Set up native event listeners for menu actions
   useEffect(() => {
@@ -72,9 +90,46 @@ const App = () => {
   // Register a global file opener function that can be called from MarkdownLink
   useEffect(() => {
     // Create global handler for opening markdown files from links
-    global.openMarkdownFile = (filePath: string, content: string) => {
+    global.openMarkdownFile = (filePath: string, content: string, newTab = true) => {
       console.log('Opening markdown file from link:', filePath);
-      handleSelectedFile(filePath);
+
+      try {
+        // Extract file name from path
+        const fileName = filePath.split('/').pop() || 'Untitled';
+
+        // First check if this file is already open in a tab
+        const existingTabIndex = openTabs.findIndex((tab) => tab.filePath === filePath);
+
+        if (existingTabIndex !== -1) {
+          // If it's already open, just switch to it
+          console.log('File already open, switching to tab:', existingTabIndex);
+          setActiveTabIndex(existingTabIndex);
+          return;
+        }
+
+        // Create a new tab directly instead of calling openTab
+        // This will avoid any issues with React state updates
+        const newTab: TabData = {
+          id: Date.now().toString(),
+          filePath,
+          fileName,
+          content
+        };
+
+        // Important: Add the new tab without affecting other tabs
+        // and make it active without closing other tabs
+        setOpenTabs((current) => {
+          // First add the new tab
+          const updated = [...current, newTab];
+          // Then set the active index to the newly added tab
+          setTimeout(() => {
+            setActiveTabIndex(updated.length - 1);
+          }, 0);
+          return updated;
+        });
+      } catch (error) {
+        console.error('Error opening file in new tab:', error);
+      }
     };
 
     // Clean up on unmount
@@ -82,7 +137,67 @@ const App = () => {
       // Clean up global handler without using delete operator
       global.openMarkdownFile = undefined as any;
     };
-  }, []);
+  }, [openTabs]);
+
+  // Tab management functions
+  const handleTabPress = (index: number) => {
+    setActiveTabIndex(index);
+  };
+
+  const closeTab = (index: number) => {
+    // Create a copy of the current tabs
+    const newTabs = [...openTabs];
+    // Remove the tab at the specified index
+    newTabs.splice(index, 1);
+
+    // Update the active tab index if necessary
+    let newActiveTabIndex = activeTabIndex;
+    if (newTabs.length === 0) {
+      // No more tabs open
+      newActiveTabIndex = -1;
+    } else if (index === activeTabIndex) {
+      // The closed tab was active, select the previous tab or the first tab
+      newActiveTabIndex = Math.max(0, index - 1);
+    } else if (index < activeTabIndex) {
+      // The closed tab was before the active tab, adjust the index
+      newActiveTabIndex = activeTabIndex - 1;
+    }
+
+    setOpenTabs(newTabs);
+    setActiveTabIndex(newActiveTabIndex);
+  };
+
+  const openTab = (filePath: string, fileName: string, content: string) => {
+    // Check if the file is already open in a tab
+    const existingTabIndex = openTabs.findIndex((tab) => tab.filePath === filePath);
+
+    if (existingTabIndex !== -1) {
+      // File is already open, just switch to that tab
+      setActiveTabIndex(existingTabIndex);
+      return;
+    }
+
+    // Create a new tab
+    const newTab: TabData = {
+      id: Date.now().toString(), // Simple unique ID
+      filePath,
+      fileName,
+      content
+    };
+
+    // First update the tabs array (add the new tab)
+    const updatedTabs = [...openTabs, newTab];
+
+    // Then update state and make the new tab active
+    setOpenTabs(updatedTabs);
+    setActiveTabIndex(updatedTabs.length - 1); // Fix: use length-1 as index
+  };
+
+  const addNewTab = () => {
+    // This function is called when the + button in the tab bar is clicked
+    // For now, just show a file picker dialog
+    openFilePicker();
+  };
 
   // Handle file selection from native file picker
   const handleSelectedFile = async (filePath: string) => {
@@ -123,10 +238,11 @@ const App = () => {
       const content = await RNFS.readFile(decodedPath, 'utf8');
       console.log('File content loaded, length:', content.length);
 
-      // Set selected file and content
-      console.log('Updating state with selected file and content');
-      setSelectedFile(decodedPath);
-      setFileContent(content);
+      // Extract file name from path
+      const fileName = decodedPath.split('/').pop() || 'Untitled';
+
+      // Open the file in a new tab
+      openTab(decodedPath, fileName, content);
 
       // Refresh file list
       console.log('Refreshing file list...');
@@ -141,17 +257,12 @@ const App = () => {
       console.log('File list updated with', dirItems.length, 'items');
     } catch (error: any) {
       console.error('Failed to load selected file:', error);
-      setFileContent(`Error loading file content: ${error.message}`);
+      Alert.alert('Error', `Failed to load file: ${error.message}`);
     }
   };
 
-  // Initialize the file list without automatically opening welcome.md
+  // Initialize the file list
   useEffect(() => {
-    // Skip if a file is already selected
-    if (selectedFile && fileContent) {
-      return;
-    }
-
     // Just load the file list without auto-opening welcome.md
     const loadFileList = async () => {
       try {
@@ -169,36 +280,18 @@ const App = () => {
     };
 
     loadFileList();
-  }, [currentPath, selectedFile, fileContent]);
-
-  // Load files from the current directory
-  useEffect(() => {
-    const loadFiles = async () => {
-      try {
-        const results = await RNFS.readDir(currentPath);
-        // Sort by directories first, then by name
-        results.sort((a, b) => {
-          if (a.isDirectory() && !b.isDirectory()) return -1;
-          if (!a.isDirectory() && b.isDirectory()) return 1;
-          return a.name.localeCompare(b.name);
-        });
-        setFiles(results);
-      } catch (error) {
-        console.error('Failed to read directory:', error);
-      }
-    };
-
-    loadFiles();
   }, [currentPath]);
 
-  // Handle file selection
+  // This useEffect is redundant with the one above, removing to avoid duplicate directory reads
+
+  // Handle file selection from sidebar
   const handleFilePress = async (file: RNFS.ReadDirItem) => {
     if (file.isDirectory()) {
       setCurrentPath(file.path);
-      setSelectedFile(null);
-      setFileContent('');
-    } else if (file.name.toLowerCase().endsWith('.md')) {
-      setSelectedFile(file.path);
+    } else if (
+      file.name.toLowerCase().endsWith('.md') ||
+      file.name.toLowerCase().endsWith('.markdown')
+    ) {
       try {
         // Handle special characters in file path similar to handleSelectedFile
         let decodedPath = file.path;
@@ -216,10 +309,12 @@ const App = () => {
 
         console.log('Attempting to read file with path:', decodedPath);
         const content = await RNFS.readFile(decodedPath, 'utf8');
-        setFileContent(content);
+
+        // Open in a new tab
+        openTab(decodedPath, file.name, content);
       } catch (error: any) {
         console.error('Failed to read file:', error);
-        setFileContent(`Error loading file content: ${error.message}`);
+        Alert.alert('Error', `Failed to load file: ${error.message}`);
       }
     }
   };
@@ -229,8 +324,6 @@ const App = () => {
     const parentPath = currentPath.split('/').slice(0, -1).join('/');
     if (parentPath) {
       setCurrentPath(parentPath);
-      setSelectedFile(null);
-      setFileContent('');
     }
   };
 
@@ -321,7 +414,7 @@ const App = () => {
                   key={index}
                   name={file.name}
                   isDirectory={file.isDirectory()}
-                  isSelected={selectedFile === file.path}
+                  isSelected={false}
                   onPress={() => handleFilePress(file)}
                 />
               ))}
@@ -338,20 +431,24 @@ const App = () => {
 
         {/* Main content area */}
         <View style={[styles.contentArea, isSidebarCollapsed && styles.expandedContent]}>
-          {selectedFile && fileContent ? (
+          {/* Tab bar */}
+          {openTabs.length > 0 && (
+            <TabBar
+              tabs={openTabs}
+              activeTabIndex={activeTabIndex}
+              onTabPress={handleTabPress}
+              onCloseTab={closeTab}
+              onAddTab={addNewTab}
+            />
+          )}
+
+          {/* Content */}
+          {getActiveTab() ? (
             <>
-              <View style={styles.filePathDisplay}>
-                <Text
-                  style={{
-                    fontSize: 12,
-                    color: isDarkMode ? '#8E8E93' : '#8E8E93',
-                    marginBottom: 5
-                  }}
-                >
-                  {selectedFile.split('/').pop()}
-                </Text>
-              </View>
-              <MarkdownViewer content={fileContent} filePath={selectedFile} />
+              <MarkdownViewer
+                content={getActiveTab()?.content || ''}
+                filePath={getActiveTab()?.filePath || ''}
+              />
             </>
           ) : (
             <View
