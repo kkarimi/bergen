@@ -4,7 +4,6 @@
 <img src="./assets/newicon.png" alt="Bergen Logo" width="120"/>
 
 
-
 ![Bergen](https://img.shields.io/badge/Bergen-Markdown%20Viewer-blue?style=for-the-badge)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/kkarimi/bergen?style=for-the-badge)](https://github.com/kkarimi/bergen/releases)
 [![License](https://img.shields.io/github/license/kkarimi/bergen?style=for-the-badge)](LICENSE)
@@ -12,10 +11,11 @@
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge)](http://makeapullrequest.com)
 
 <br />
+<img src="./assets/screenshot.png" alt="Bergen app" width="400"/>
+<br />
 
 
-
-**A beautiful, minimal Markdown reader for macOS **
+*A minimal Markdown reader*
 
 • [Getting Started](#getting-started) 
 • [Features](#features) 
