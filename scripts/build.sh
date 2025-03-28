@@ -157,37 +157,37 @@ fi
 # -----------------------
 # STEP 6: Export the app
 # -----------------------
-echo -e "\n${YELLOW}📦 Exporting the .xcarchive${NC}"
+# echo -e "\n${YELLOW}📦 Exporting the .xcarchive${NC}"
 
-ARCHIVE_PATH="$PROJECT_ROOT/macos/build/Release/bergen.xcarchive"
-EXPORT_PATH="$PROJECT_ROOT/macos/build/Release/Exported"
-EXPORT_OPTIONS_PLIST="$PROJECT_ROOT/macos/ExportOptions.plist"
+# ARCHIVE_PATH="$PROJECT_ROOT/macos/build/Release/bergen.xcarchive"
+# EXPORT_PATH="$PROJECT_ROOT/macos/build/Release/Exported"
+# EXPORT_OPTIONS_PLIST="$PROJECT_ROOT/macos/ExportOptions.plist"
 
-# Make sure your archive exists
-if [ ! -d "$ARCHIVE_PATH" ]; then
-  echo -e "${RED}❌ Archive not found at $ARCHIVE_PATH${NC}"
-  exit 1
-fi
+# # Make sure your archive exists
+# if [ ! -d "$ARCHIVE_PATH" ]; then
+#   echo -e "${RED}❌ Archive not found at $ARCHIVE_PATH${NC}"
+#   exit 1
+# fi
 
-# Clean up previous exports
-rm -rf "$EXPORT_PATH"
-mkdir -p "$EXPORT_PATH"
+# # Clean up previous exports
+# rm -rf "$EXPORT_PATH"
+# mkdir -p "$EXPORT_PATH"
 
-cd "$PROJECT_ROOT/macos"
-# Call xcodebuild to export the archive
-xcodebuild -exportArchive \
-  -archivePath "$ARCHIVE_PATH" \
-  -exportPath "$EXPORT_PATH" \
-  -exportOptionsPlist "$EXPORT_OPTIONS_PLIST" \
-  CODE_SIGN_IDENTITY="" \
-  CODE_SIGNING_REQUIRED=NO \
-  CODE_SIGNING_ALLOWED=NO
+# cd "$PROJECT_ROOT/macos"
+# # Call xcodebuild to export the archive
+# xcodebuild -exportArchive \
+#   -archivePath "$ARCHIVE_PATH" \
+#   -exportPath "$EXPORT_PATH" \
+#   -exportOptionsPlist "$EXPORT_OPTIONS_PLIST" \
+#   CODE_SIGN_IDENTITY="" \
+#   CODE_SIGNING_REQUIRED=NO \
+#   CODE_SIGNING_ALLOWED=NO
 
-# Check if the export succeeded
-if [ $? -eq 0 ]; then
-  echo -e "\n${GREEN}✅ Export successful!${NC}"
-  echo "Exported files are here: $EXPORT_PATH"
-else
-  echo -e "\n${RED}❌ Export failed${NC}"
-  exit 1
-fi
+# # Check if the export succeeded
+# if [ $? -eq 0 ]; then
+#   echo -e "\n${GREEN}✅ Export successful!${NC}"
+#   echo "Exported files are here: $EXPORT_PATH"
+# else
+#   echo -e "\n${RED}❌ Export failed${NC}"
+#   exit 1
+# fi
