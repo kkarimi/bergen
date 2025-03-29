@@ -23,6 +23,7 @@
     "appstore-build": "./scripts/app-store-build.sh",
     "appstore-release": "./scripts/app-store-release.sh",
     "create-homebrew-tap": "./scripts/create-homebrew-tap.sh",
+    "screenshots": "./scripts/generate-app-store-screenshots.sh",
     "lint": "biome check --write .",
     "lint:fix": "biome check --fix --unsafe .",
     "start": "react-native start",

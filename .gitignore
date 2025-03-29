@@ -81,3 +81,4 @@ cert/
 homebrew-bergen/
 *.bak
 **/**/*..*.bak
+screenshots/
