@@ -154,7 +154,8 @@ fi
 
 # Get the release URL from gh command
 RELEASE_URL=$(gh release view "v${NEW_VERSION}" --json url -q .url 2>/dev/null || echo "$REPO_URL/releases")
-RELEASE_EDIT_URL="${RELEASE_URL/\/tag\//\/edit\/}"
+# Properly convert tag URL to edit URL without escaping backslashes
+RELEASE_EDIT_URL=$(echo "$RELEASE_URL" | sed 's|/tag/|/edit/|')
 
 echo "🌎 Please review the release at: $RELEASE_EDIT_URL"
 
@@ -179,17 +180,17 @@ else
     fi
 fi
 
-# If --publish-cask flag is provided, publish to Homebrew cask
+# If --publish-cask flag is provided, update your own Homebrew tap
 if $PUBLISH_CASK; then
-    echo "🍺 Publishing to Homebrew cask..."
+    echo "🍺 Updating your own Homebrew tap..."
 
-    # Check if publish-cask.sh exists and is executable
-    if [ ! -x "./scripts/publish-cask.sh" ]; then
-        echo "❌ scripts/publish-cask.sh not found or not executable"
-        echo "   Please make it executable with: chmod +x ./scripts/publish-cask.sh"
+    # Check if update-brew-tap.sh exists and is executable
+    if [ ! -x "./scripts/update-brew-tap.sh" ]; then
+        echo "❌ scripts/update-brew-tap.sh not found or not executable"
+        echo "   Please make it executable with: chmod +x ./scripts/update-brew-tap.sh"
         exit 1
     fi
 
-    # Publish the cask
-    ./scripts/publish-cask.sh
+    # Update your own Homebrew tap
+    ./scripts/update-brew-tap.sh
 fi
