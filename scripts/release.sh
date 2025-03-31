@@ -104,18 +104,32 @@ sed -i '' "s|/releases/latest/download/bergen-macos-v[0-9]*\.[0-9]*\.[0-9]*\.zip
 git add package.json README.md
 git commit -m "chore: bump version to v${NEW_VERSION}"
 
+# Define the ZIP naming
+OLD_ZIP_NAME="bergen-macos-v${CURRENT_VERSION}.zip"
+ZIP_NAME="bergen-macos-v${NEW_VERSION}.zip"
+
 # Build the app if --no-build is not specified
 if [ "$NO_BUILD" = false ]; then
     echo "🏗 Building the app..."
     ./scripts/build.sh
 else
     echo "🏗 Skipping build as --no-build was specified"
+    
+    # If --no-build is specified, check for existing zip and rename it
+    if [ -f "$OLD_ZIP_NAME" ]; then
+        echo "📦 Using existing build artifact and renaming to match new version..."
+        cp "$OLD_ZIP_NAME" "$ZIP_NAME"
+    elif [ -f "bergen.app" ] || [ -d "bergen.app" ]; then
+        echo "📦 Found bergen.app, creating new zip with current version..."
+        ditto -c -k --keepParent "bergen.app" "$ZIP_NAME"
+    else
+        echo "❌ No existing build artifact found. Please run without --no-build first or ensure bergen.app exists."
+        exit 1
+    fi
 fi
 
-ZIP_NAME="bergen-macos-v${NEW_VERSION}.zip"
-
-# Check if zip file exists (only if we're not skipping the build)
-if [ "$NO_BUILD" = false ] && [ ! -f "$ZIP_NAME" ]; then
+# Check if zip file exists
+if [ ! -f "$ZIP_NAME" ]; then
     echo "❌ Build artifact not found: $ZIP_NAME"
     exit 1
 fi
@@ -127,26 +141,43 @@ git push origin "v${NEW_VERSION}"
 # Create GitHub release
 echo "🚀 Creating GitHub release v${NEW_VERSION}..."
 
-if [ "$NO_BUILD" = false ]; then
-    gh release create "v${NEW_VERSION}" \
-        --title "Bergen v${NEW_VERSION}" \
-        --notes "Release notes for version ${NEW_VERSION}" \
-        --draft \
-        "$ZIP_NAME"
-else
-    gh release create "v${NEW_VERSION}" \
-        --title "Bergen v${NEW_VERSION}" \
-        --notes "Release notes for version ${NEW_VERSION}" \
-        --draft
-fi
+gh release create "v${NEW_VERSION}" \
+    --title "Bergen v${NEW_VERSION}" \
+    --notes "Release notes for version ${NEW_VERSION}" \
+    --draft \
+    "$ZIP_NAME"
 
 echo "✅ Release v${NEW_VERSION} created successfully!"
-echo "📦 Binary uploaded to GitHub releases"
-echo "🌎 Please review the release at: $REPO_URL/releases"
+if [ "$NO_BUILD" = false ]; then
+    echo "📦 Binary uploaded to GitHub releases"
+fi
+
+# Get the release URL from gh command
+RELEASE_URL=$(gh release view "v${NEW_VERSION}" --json url -q .url 2>/dev/null || echo "$REPO_URL/releases")
+RELEASE_EDIT_URL="${RELEASE_URL/\/tag\//\/edit\/}"
+
+echo "🌎 Please review the release at: $RELEASE_EDIT_URL"
 
 # Push all changes to origin
 echo "🚀 Pushing all changes to origin..."
 git push origin main
+
+# Ask if user wants to open browser
+read -p "🌐 Open release page in browser? [Y/n] " -n 1 -r OPEN_BROWSER
+echo
+if [[ $OPEN_BROWSER =~ ^[Nn]$ ]]; then
+    echo "📝 You can open the release page later at: $RELEASE_EDIT_URL"
+else
+    echo "🌐 Opening release page in browser..."
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        open "$RELEASE_EDIT_URL"
+    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        xdg-open "$RELEASE_EDIT_URL" &>/dev/null || (echo "⚠️ Could not open browser automatically" && echo "📝 Please visit: $RELEASE_EDIT_URL")
+    else
+        echo "⚠️ Could not open browser automatically"
+        echo "📝 Please visit: $RELEASE_EDIT_URL"
+    fi
+fi
 
 # If --publish-cask flag is provided, publish to Homebrew cask
 if $PUBLISH_CASK; then
