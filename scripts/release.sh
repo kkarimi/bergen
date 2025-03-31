@@ -15,7 +15,7 @@ cd "$PROJECT_ROOT"
 
 # Parse command line arguments
 BUMP_TYPE="patch"
-PUBLISH_CASK=false
+PUBLISH_CASK=true
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --bump-type) BUMP_TYPE="$2"; shift ;;
@@ -129,14 +129,14 @@ echo "🌎 Please review the release at: $REPO_URL/releases"
 # If --publish-cask flag is provided, publish to Homebrew cask
 if $PUBLISH_CASK; then
     echo "🍺 Publishing to Homebrew cask..."
-    
+
     # Check if publish-cask.sh exists and is executable
     if [ ! -x "./scripts/publish-cask.sh" ]; then
         echo "❌ scripts/publish-cask.sh not found or not executable"
         echo "   Please make it executable with: chmod +x ./scripts/publish-cask.sh"
         exit 1
     fi
-    
+
     # Publish the cask
     ./scripts/publish-cask.sh
-fi 
+fi

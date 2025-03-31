@@ -110,8 +110,19 @@ if [ -n "$APP_PATH" ]; then
   # Create zip for distribution
   VERSION=$(grep -o '"version": "[^"]*"' "$PROJECT_ROOT/package.json" | cut -d'"' -f4)
   ZIP_FILE="$PROJECT_ROOT/bergen-macos-v${VERSION}.zip"
+  
+  # Properly sign the app for distribution
+  echo -e "\n${YELLOW}🔐 Preparing app for distribution...${NC}"
+  echo "  - Removing any existing signature"
+  codesign --remove-signature "$PROJECT_ROOT/bergen.app" || true
+  echo "  - Adding ad-hoc signature"
+  codesign --sign - --force --deep "$PROJECT_ROOT/bergen.app"
+  
+  # Create a properly formatted zip file that preserves metadata
   cd "$PROJECT_ROOT"
-  zip -r "$ZIP_FILE" bergen.app
+  rm -f "$ZIP_FILE"
+  echo -e "📦 Creating distribution zip with ditto to preserve metadata..."
+  ditto -c -k --keepParent "$PROJECT_ROOT/bergen.app" "$ZIP_FILE"
   echo -e "Distribution zip: ${BLUE}$ZIP_FILE${NC}"
   
   echo -e "\n${GREEN}🎉 Build completed successfully!${NC}"
