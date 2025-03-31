@@ -94,8 +94,12 @@ package.version = '${NEW_VERSION}';
 fs.writeFileSync('./package.json', JSON.stringify(package, null, 2) + '\n');
 "
 
+# Update version in README.md download link
+echo "📝 Updating version in README.md download link..."
+sed -i '' "s|/releases/latest/download/bergen-macos-v[0-9]*\.[0-9]*\.[0-9]*\.zip|/releases/latest/download/bergen-macos-v${NEW_VERSION}.zip|g" README.md
+
 # Commit the version bump
-git add package.json
+git add package.json README.md
 git commit -m "chore: bump version to v${NEW_VERSION}"
 
 # Build the app
@@ -125,6 +129,10 @@ gh release create "v${NEW_VERSION}" \
 echo "✅ Release v${NEW_VERSION} created successfully!"
 echo "📦 Binary uploaded to GitHub releases"
 echo "🌎 Please review the release at: $REPO_URL/releases"
+
+# Push all changes to origin
+echo "🚀 Pushing all changes to origin..."
+git push origin main
 
 # If --publish-cask flag is provided, publish to Homebrew cask
 if $PUBLISH_CASK; then

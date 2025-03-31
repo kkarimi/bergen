@@ -41,7 +41,17 @@ coming soon!
 
 ## 🚀 Getting Started
 
-You can download the binary from the latest release [here](https://github.com/kkarimi/bergen/releases)
+### 📥 Download
+
+<div align="center">
+  <a href="https://github.com/kkarimi/bergen/releases/latest/download/bergen-macos-v0.1.11.zip">
+    <img src="https://img.shields.io/badge/Download-Latest%20Release-blue?style=for-the-badge&logo=github" alt="Download Latest Release" />
+  </a>
+</div>
+
+> Always links to the latest release zip file!
+
+You can also browse all releases [here](https://github.com/kkarimi/bergen/releases).
 
 ### 📦 Installation
 

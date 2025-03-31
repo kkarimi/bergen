@@ -36,8 +36,12 @@ if ! git rev-parse --is-inside-work-tree &> /dev/null; then
     exit 1
 fi
 
+# Set project root directory
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$PROJECT_ROOT"
+
 # Get current version from package.json
-VERSION=$(node -p "require('../package.json').version")
+VERSION=$(node -p "require('./package.json').version")
 echo -e "${BLUE}📝 Current version: ${VERSION}${NC}"
 
 # Get GitHub repository information
@@ -56,6 +60,9 @@ if ! gh release view "v${VERSION}" &> /dev/null; then
     echo -e "${RED}❌ Release v${VERSION} does not exist. Run the release script first.${NC}"
     exit 1
 fi
+
+# Make sure we're in the project root
+cd "$PROJECT_ROOT"
 
 # Download the ZIP file if it doesn't exist locally
 if [ ! -f "$ZIP_NAME" ]; then
@@ -81,20 +88,20 @@ if ! gh repo view "$REPO_OWNER/homebrew-cask" &> /dev/null; then
 fi
 
 # Clone your fork of homebrew-cask if not already cloned
-FORK_DIR="./homebrew-cask"
+FORK_DIR="$PROJECT_ROOT/homebrew-cask"
 if [ ! -d "$FORK_DIR" ]; then
     echo -e "${YELLOW}🔍 Cloning your fork of homebrew-cask...${NC}"
     git clone "https://github.com/$REPO_OWNER/homebrew-cask.git" "$FORK_DIR"
     cd "$FORK_DIR"
     git remote add upstream https://github.com/homebrew/homebrew-cask.git
-    cd ..
+    cd "$PROJECT_ROOT"
 else
     echo -e "${BLUE}📁 Using existing homebrew-cask clone...${NC}"
     cd "$FORK_DIR"
     git checkout master
     git pull upstream master
     git push origin master
-    cd ..
+    cd "$PROJECT_ROOT"
 fi
 
 # Create a new branch for the PR
@@ -154,4 +161,4 @@ echo -e "${BLUE}🌎 Check your GitHub profile for the PR link${NC}"
 echo -e "${YELLOW}⚠️  Note: The PR will be reviewed by Homebrew maintainers before merging.${NC}"
 echo -e "${YELLOW}⚠️  This process can take a few days to a few weeks.${NC}"
 
-cd .. 
+cd "$PROJECT_ROOT"
