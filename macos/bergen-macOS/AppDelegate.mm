@@ -192,8 +192,12 @@ os_log_t bergenMenuLog;
 - (NSURL *)bundleURL
 {
 #if DEBUG
-  // In debug builds, use the React Native development server
-  return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
+  // In debug builds, use the React Native development server with explicit localhost IP
+  RCTBundleURLProvider *provider = [RCTBundleURLProvider sharedSettings];
+  // Force localhost to 127.0.0.1 (explicit IP) for better connectivity
+  [provider setJsLocation:@"127.0.0.1"];
+  os_log_info(bergenAppLog, "Using Metro server at %{public}@", [provider jsLocation]);
+  return [provider jsBundleURLForBundleRoot:@"index"];
 #else
   // In release builds, use the pre-bundled JavaScript file
   return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];

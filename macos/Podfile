@@ -1,11 +1,17 @@
 require_relative '../node_modules/react-native-macos/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
+install! 'cocoapods', :deterministic_uuids => false
+
 prepare_react_native_project!
 
 target 'bergen-macOS' do
   platform :macos, '11.0'
-  use_native_modules!
+  
+  # Manually add the dependencies instead of using use_native_modules!
+  pod 'RNCClipboard', :path => '../node_modules/@react-native-clipboard/clipboard'
+  pod 'RNFS', :path => '../node_modules/react-native-fs'
+  pod 'react-native-webview', :path => '../node_modules/react-native-webview'
 
   # Flags change depending on the env values.
   flags = get_default_flags()

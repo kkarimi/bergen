@@ -384,6 +384,35 @@ If there are issues with CocoaPods:
    pod repo update
    ```
 
+3. Issue with `use_native_modules!` error:
+   
+   If you encounter the following error:
+   ```
+   [!] Invalid `Podfile` file: unexpected token at ''.
+   
+    #  from /Users/user/path/to/bergen/macos/Podfile:8
+    #  -------------------------------------------
+    #    platform :macos, '11.0'
+    >    use_native_modules!
+   ```
+   
+   The solution is to manually specify the dependencies instead of using `use_native_modules!`:
+   
+   ```ruby
+   # Instead of this:
+   # use_native_modules!
+   
+   # Use this:
+   pod 'RNCClipboard', :path => '../node_modules/@react-native-clipboard/clipboard'
+   pod 'RNFS', :path => '../node_modules/react-native-fs'
+   pod 'react-native-webview', :path => '../node_modules/react-native-webview'
+   ```
+   
+   Also add this line before the `prepare_react_native_project!` call:
+   ```ruby
+   install! 'cocoapods', :deterministic_uuids => false
+   ```
+
 ### Sandbox Permission Issues
 
 If you encounter sandbox or permission errors during the build process (especially when copying resources):
