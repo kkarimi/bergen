@@ -69,6 +69,18 @@ RCT_EXPORT_MODULE();
   return YES; // Return NO if not using UI operations
 }
 
+// Important: Ensure proper bridge initialization
+- (void)setBridge:(RCTBridge *)bridge
+{
+  [super setBridge:bridge];
+}
+
+// Check if bridge is ready before sending events
+- (BOOL)isBridgeReady
+{
+  return self.bridge != nil && [self.bridge isValid];
+}
+
 // Your module methods
 RCT_EXPORT_METHOD(yourMethod:(NSString *)param
                   callback:(RCTResponseSenderBlock)callback)
@@ -238,6 +250,12 @@ To send events from native code to JavaScript:
 // Sending an event
 - (void)sendCustomEvent
 {
+  // Always check if bridge is ready before sending events
+  if (![self isBridgeReady]) {
+    // Handle case when bridge isn't ready - log error, etc.
+    return;
+  }
+  
   [self sendEventWithName:@"onSomeEvent" body:@{@"data": @"value"}];
 }
 ```
@@ -353,6 +371,54 @@ describe('ExampleModule', () => {
    - Verify event name in `supportedEvents` array
    - Check event listener is properly set up in JS
    - Make sure event emitter is not garbage collected
+   - Ensure you're checking `isBridgeReady` before sending events
+   - Don't re-declare properties from RCTEventEmitter (e.g. `bridge`)
+
+## Module Types
+
+When creating native modules, choose the appropriate base class:
+
+1. **NSObject-Based Modules**:
+   - Extend `NSObject` and implement `RCTBridgeModule` protocol
+   - Simpler implementation, better for modules without events
+   - Example: GitModule, utility modules, etc.
+
+```objc
+@interface SimpleModule : NSObject <RCTBridgeModule>
+@end
+
+@implementation SimpleModule
+RCT_EXPORT_MODULE();
+// Methods...
+@end
+```
+
+2. **RCTEventEmitter-Based Modules**:
+   - Extend `RCTEventEmitter` when you need to emit events to JavaScript
+   - Must implement `supportedEvents` and override `setBridge:`
+   - Example: NativeMenuModule, FileManagerModule, etc.
+
+```objc
+@interface EventModule : RCTEventEmitter <RCTBridgeModule>
+- (BOOL)isBridgeReady;
+@end
+
+@implementation EventModule
+RCT_EXPORT_MODULE();
+
+- (NSArray<NSString *> *)supportedEvents {
+  return @[@"someEvent"];
+}
+
+- (void)setBridge:(RCTBridge *)bridge {
+  [super setBridge:bridge];
+}
+
+- (BOOL)isBridgeReady {
+  return self.bridge != nil && [self.bridge isValid];
+}
+@end
+```
 
 ## Best Practices
 
@@ -360,7 +426,9 @@ describe('ExampleModule', () => {
 2. **Error Handling**: Always handle errors and edge cases in native code
 3. **Threading**: UI operations must run on the main thread
 4. **Memory Management**: Avoid memory leaks, especially with event listeners
-5. **Documentation**: Document all public APIs and parameters
+5. **Bridge Safety**: Always check bridge readiness before sending events
+6. **Property Conflicts**: Don't redeclare properties inherited from parent classes
+7. **Documentation**: Document all public APIs and parameters
 
 ## Examples
 

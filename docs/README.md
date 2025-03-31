@@ -8,6 +8,7 @@ This directory contains comprehensive documentation for the Bergen app.
 
 - [**Architecture Guide**](./architecture.md) - Overview of the application architecture, technology stack, and design decisions
 - [**Native Code Guide**](./native-code-guide.md) - Explanation of native code organization, components, and design patterns
+- [**File Information Panel**](./file-info-panel.md) - Documentation for the file information sidebar feature
 
 ### Development Guides
 

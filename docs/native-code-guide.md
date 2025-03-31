@@ -115,11 +115,13 @@ The project includes the following native modules:
 
 Allows JavaScript code to interact with the native menu system:
 
+- Extends RCTEventEmitter to send events to JavaScript
 - Exposes methods to add/modify menu items
 - Sends events to JavaScript when menu items are selected
 - Handles File -> Open menu action via native file picker
 - Maintains a shared instance for access from AppDelegate
 - Runs on the main thread for UI operations
+- Includes safety checks to ensure bridge is ready before sending events
 
 Example JavaScript usage:
 ```javascript
@@ -253,6 +255,15 @@ If JavaScript cannot find your native module:
 1. Check the module is properly registered with `RCT_EXPORT_MODULE()`
 2. Restart the Metro bundler and app
 3. Verify the module name matches between native and JS code
+
+### RCTCallableJSModules Errors
+
+If you see errors like "RCTCallableJSModules is not set":
+
+1. Make sure your RCTEventEmitter subclasses properly implement `setBridge:`
+2. Don't redeclare properties already provided by parent classes (e.g., `bridge` property)
+3. Add safety checks with a `isBridgeReady` method before sending events
+4. Ensure module's inheritance hierarchy is correct for its purpose (NSObject vs RCTEventEmitter)
 
 ### Menu Items Not Appearing
 

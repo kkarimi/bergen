@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, useColorScheme } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
 
 // Component to render file item in sidebar
 const FileItem = ({
@@ -18,17 +18,25 @@ const FileItem = ({
   const styles = StyleSheet.create({
     fileItem: {
       padding: 10,
-      borderBottomWidth: 1,
-      borderBottomColor: '#EEEEEE'
+      borderRadius: 6,
+      marginVertical: 2,
+      marginHorizontal: 4,
+      flexDirection: 'row',
+      alignItems: 'center'
     },
     selectedFile: {
-      backgroundColor: '#E5E5EA'
+      backgroundColor: isDarkMode ? 'rgba(58, 108, 217, 0.5)' : 'rgba(0, 122, 255, 0.1)'
     },
     fileName: {
-      fontSize: 14
+      fontSize: 13,
+      flex: 1
     },
     directoryName: {
-      fontWeight: 'bold'
+      fontWeight: '600'
+    },
+    fileIcon: {
+      marginRight: 8,
+      fontSize: 16
     }
   });
 
@@ -37,18 +45,22 @@ const FileItem = ({
       style={[
         styles.fileItem,
         isSelected && styles.selectedFile,
-        isSelected && { backgroundColor: isDarkMode ? '#3A3A3C' : '#E5E5EA' }
+        !isSelected && { backgroundColor: isDarkMode ? 'transparent' : 'transparent' }
       ]}
       onPress={onPress}
     >
+      <Text style={[styles.fileIcon, { color: isDarkMode ? '#CCCCCC' : '#666666' }]}>
+        {isDirectory ? '📁' : '📄'}
+      </Text>
       <Text
         style={[
           styles.fileName,
           { color: isDarkMode ? '#FFFFFF' : '#000000' },
           isDirectory && styles.directoryName
         ]}
+        numberOfLines={1}
+        ellipsizeMode="middle"
       >
-        {isDirectory ? '📁 ' : '📄 '}
         {name}
       </Text>
     </TouchableOpacity>

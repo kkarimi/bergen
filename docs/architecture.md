@@ -50,9 +50,24 @@ The application follows a modular structure:
 ├── index.js               # Entry point
 ├── __tests__/             # Test files
 ├── assets/                # Static assets like images
-├── components/            # Reusable UI components
-├── screens/               # Screen components
-├── hooks/                 # Custom React hooks
+├── src/
+│   ├── components/        # Reusable UI components
+│   │   ├── FileItem.tsx   # File/folder item component
+│   │   ├── TabBar.tsx     # Tab navigation bar
+│   │   ├── TabItem.tsx    # Individual tab component
+│   │   ├── Sidebar.tsx    # Main sidebar component
+│   │   ├── SidebarTab.tsx # Sidebar tab navigation
+│   │   ├── FileOutline.tsx # Document outline view
+│   │   ├── FileInfo.tsx   # File information sidebar
+│   │   ├── MainContent.tsx # Main content area component
+│   │   └── markdown/      # Markdown rendering components
+│   │       ├── MarkdownViewer.tsx # Main markdown renderer
+│   │       ├── CodeBlock.tsx      # Code syntax highlighting
+│   │       ├── InlineCode.tsx     # Inline code styling
+│   │       ├── MermaidDiagram.tsx # Mermaid diagram renderer
+│   │       └── ...                # Other markdown components
+│   └── hooks/             # Custom React hooks
+│       └── useMarkdownHeadings.ts # Extract headings from markdown
 ├── utils/                 # Utility functions
 ├── services/              # API and service integrations
 ├── navigation/            # Navigation configuration
@@ -84,6 +99,24 @@ UI components follow these principles:
 - **Separation of Concerns**: Components are focused on presentation, with business logic in hooks and services
 - **Platform-Specific Variations**: When needed, components can render differently on different platforms
 
+The application uses a hierarchical component structure:
+
+#### Main Application Components
+- **App**: The root component that manages global state and layout
+- **Sidebar**: Contains file browser and document outline functionality
+- **MainContent**: Renders content area with tabs and markdown viewer
+- **FileInfo**: Displays detailed file metadata in a right sidebar
+
+#### Sidebar Components
+- **SidebarTab**: Tab navigation between file browser and outline
+- **FileItem**: Individual file/folder entry in the file browser
+- **FileOutline**: Document headings/outline view
+
+#### Content Components
+- **TabBar/TabItem**: Navigation between open documents
+- **MarkdownViewer**: Main document renderer with support for advanced markdown features
+- **Specialized Markdown Components**: Code blocks, diagrams, links, etc.
+
 ### 4. State Management
 
 The application uses:
@@ -91,6 +124,14 @@ The application uses:
 - **React Context API**: For global state that doesn't change frequently
 - **React Query/SWR**: For remote data fetching (future)
 - **Local Component State**: For UI-specific state
+- **Custom Hooks**: For complex or reusable state logic
+
+#### Custom Hooks
+
+- **useMarkdownHeadings**: Extracts and processes heading information from markdown content
+  - Provides document structure for navigation and outline view
+  - Calculates heading positions for scroll synchronization
+  - Parses headings with their hierarchy levels
 
 ## Cross-Platform Strategy
 

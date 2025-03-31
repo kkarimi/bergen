@@ -14,9 +14,17 @@ interface TabBarProps {
   onTabPress: (index: number) => void;
   onCloseTab: (index: number) => void;
   onAddTab: () => void;
+  isFileInfoSidebarVisible?: boolean;
 }
 
-const TabBar = ({ tabs, activeTabIndex, onTabPress, onCloseTab, onAddTab }: TabBarProps) => {
+const TabBar = ({
+  tabs,
+  activeTabIndex,
+  onTabPress,
+  onCloseTab,
+  onAddTab,
+  isFileInfoSidebarVisible
+}: TabBarProps) => {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
@@ -44,20 +52,26 @@ const TabBar = ({ tabs, activeTabIndex, onTabPress, onCloseTab, onAddTab }: TabB
         style={[
           styles.addButton,
           {
-            backgroundColor: isDarkMode ? '#2C2C2E' : '#E5E5EA'
+            backgroundColor: isFileInfoSidebarVisible
+              ? isDarkMode
+                ? '#3A6CD9'
+                : '#007AFF'
+              : isDarkMode
+                ? '#2C2C2E'
+                : '#E5E5EA'
           }
         ]}
         onPress={onAddTab}
       >
         <Text
           style={{
-            color: isDarkMode ? '#2C9BF0' : '#007AFF',
-            fontSize: 16,
+            color: isFileInfoSidebarVisible ? '#FFFFFF' : isDarkMode ? '#2C9BF0' : '#007AFF',
+            fontSize: 14,
             fontWeight: 'bold',
             lineHeight: 18
           }}
         >
-          +
+          ℹ️
         </Text>
       </TouchableOpacity>
     </View>

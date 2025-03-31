@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		39175AD106E869C61826ADEE /* libPods-bergen-macOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 251D2136A8FC5EF78DA4BAA6 /* libPods-bergen-macOS.a */; };
+		4083180E70A689DB6A555829 /* GitModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = CE71879A8E75042AD149A3B6 /* GitModule.mm */; };
 		5142014D2437B4B30078DB4F /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 5142014C2437B4B30078DB4F /* AppDelegate.mm */; };
 		514201522437B4B40078DB4F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 514201512437B4B40078DB4F /* Assets.xcassets */; };
 		514201552437B4B40078DB4F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 514201532437B4B40078DB4F /* Main.storyboard */; };
@@ -28,6 +29,7 @@
 		514201572437B4B40078DB4F /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		514201592437B4B40078DB4F /* bergen.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = bergen.entitlements; sourceTree = "<group>"; };
 		7AD1A2E466AAF6108CB19EED /* Pods-bergen-macOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-bergen-macOS.debug.xcconfig"; path = "Target Support Files/Pods-bergen-macOS/Pods-bergen-macOS.debug.xcconfig"; sourceTree = "<group>"; };
+		CE71879A8E75042AD149A3B6 /* GitModule.mm */ = {isa = PBXFileReference; includeInIndex = 1; name = GitModule.mm; path = "bergen-macos/GitModule.mm"; sourceTree = "<group>"; };
 		EBDBE4E855B3585F160655A7 /* Pods-bergen-macOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-bergen-macOS.release.xcconfig"; path = "Target Support Files/Pods-bergen-macOS/Pods-bergen-macOS.release.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -84,6 +86,7 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				403DA035650B02ED9A022DE7 /* PrivacyInfo.xcprivacy */,
 				9FE2A43E3E2634608301EB64 /* Pods */,
+				CE71879A8E75042AD149A3B6 /* GitModule.mm */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -254,6 +257,7 @@
 			files = (
 				514201582437B4B40078DB4F /* main.m in Sources */,
 				5142014D2437B4B30078DB4F /* AppDelegate.mm in Sources */,
+				4083180E70A689DB6A555829 /* GitModule.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

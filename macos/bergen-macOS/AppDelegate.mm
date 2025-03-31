@@ -98,7 +98,7 @@ os_log_t bergenMenuLog;
   }
   
   // If React Native bridge is already initialized, try to open immediately
-  if ([[NativeMenuModule sharedInstance] bridge]) {
+  if ([[NativeMenuModule sharedInstance] isBridgeReady]) {
     return [self openFile:filename];
   }
   
@@ -136,21 +136,30 @@ os_log_t bergenMenuLog;
   
   // Wait a bit to ensure React Native is ready, then send the event
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-    [menuModule sendEventWithName:@"fileMenuAction" body:@{
-      @"action": @"fileSelected",
-      @"path": filePath
-    }];
-    
-    os_log_debug(bergenFileLog, "Sent fileSelected event for path: %{public}@", filePath);
-    
-    // Send again after a short delay as a fallback
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    // Check if the bridge is ready before sending events
+    if ([menuModule isBridgeReady]) {
       [menuModule sendEventWithName:@"fileMenuAction" body:@{
         @"action": @"fileSelected",
         @"path": filePath
       }];
-      os_log_debug(bergenFileLog, "Sent fileSelected event again (backup)");
-    });
+      
+      os_log_debug(bergenFileLog, "Sent fileSelected event for path: %{public}@", filePath);
+      
+      // Send again after a short delay as a fallback
+      dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        if ([menuModule isBridgeReady]) {
+          [menuModule sendEventWithName:@"fileMenuAction" body:@{
+            @"action": @"fileSelected",
+            @"path": filePath
+          }];
+          os_log_debug(bergenFileLog, "Sent fileSelected event again (backup)");
+        } else {
+          os_log_error(bergenFileLog, "Cannot send backup event: bridge is not ready");
+        }
+      });
+    } else {
+      os_log_error(bergenFileLog, "Cannot send event: bridge is not ready");
+    }
   });
   
   return YES;

@@ -245,6 +245,47 @@ Solutions:
    pod install
    ```
 
+### No Bundle URL Present
+
+If you see the error "No bundle URL present" when launching the app:
+
+#### Solution 1: Use the Development Script
+
+We've created a special development script that properly configures both Metro bundler and the app:
+
+```bash
+./run-dev.sh
+```
+
+This script:
+1. Stops any existing Metro bundler
+2. Cleans the build directory
+3. Configures the build scripts to connect properly
+4. Starts Metro bundler with the correct host
+5. Builds and runs the app with the right environment variables
+
+#### Solution 2: Start Metro Separately
+
+If you prefer to run Metro separately:
+
+1. Start Metro bundler in one terminal:
+   ```bash
+   yarn start --host 127.0.0.1
+   ```
+
+2. In another terminal, set the environment variables and run the app:
+   ```bash
+   RCT_NO_LAUNCH_PACKAGER=true REACT_NATIVE_PACKAGER_HOSTNAME=127.0.0.1 yarn macos
+   ```
+
+#### Solution 3: Fast Start for Existing Builds
+
+For faster startup with existing builds:
+
+```bash
+./start-macos-fast.sh
+```
+
 ## Performance Issues
 
 If the app becomes slow or unresponsive:

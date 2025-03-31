@@ -19,8 +19,8 @@ extern os_log_t bergenMenuLog;
 - (void)toggleSidebar:(id)sender;
 - (void)setSidebarMenuItem:(NSMenuItem *)menuItem;
 - (void)updateSidebarMenuState:(BOOL)isCollapsed;
+- (BOOL)isBridgeReady;
 
-@property (nonatomic, readonly) RCTBridge *bridge;
 @property (nonatomic, weak) NSMenuItem *sidebarMenuItem;
 @property (nonatomic, assign) BOOL isSidebarCollapsed;
 @end
@@ -122,6 +122,17 @@ RCT_EXPORT_MODULE();
     _isSidebarCollapsed = YES; // Default state: sidebar is collapsed
   }
   return self;
+}
+
+// Initialize the RCTBridge when module is initialized by React Native
+- (void)setBridge:(RCTBridge *)bridge
+{
+  [super setBridge:bridge];
+}
+
+- (BOOL)isBridgeReady
+{
+  return self.bridge != nil && [self.bridge isValid];
 }
 
 - (void)setSidebarMenuItem:(NSMenuItem *)menuItem
@@ -239,6 +250,12 @@ RCT_EXPORT_METHOD(updateSidebarState:(BOOL)isCollapsed)
     os_log_error(bergenMenuLog, "toggleSidebar: sender is not a valid NSMenuItem");
   }
   
+  // Check if bridge is ready before sending events
+  if (![self isBridgeReady]) {
+    os_log_error(bergenMenuLog, "Cannot send event: bridge is not ready");
+    return;
+  }
+  
   // Send an event to JavaScript to notify it to toggle the sidebar
   // Note: in this context, show=YES means sidebar visible (!isCollapsed)
   [self sendEventWithName:@"viewMenuAction" body:@{
@@ -250,6 +267,12 @@ RCT_EXPORT_METHOD(updateSidebarState:(BOOL)isCollapsed)
 - (void)handleOpenFileMenuAction
 {
   os_log_info(bergenMenuLog, "File -> Open menu action triggered");
+  
+  // Check if bridge is ready before sending events
+  if (![self isBridgeReady]) {
+    os_log_error(bergenMenuLog, "Cannot send event: bridge is not ready");
+    return;
+  }
   
   // Send an event to JavaScript to notify the File -> Open menu was clicked
   [self sendEventWithName:@"fileMenuAction" body:@{@"action": @"openFile"}];
@@ -271,22 +294,31 @@ RCT_EXPORT_METHOD(updateSidebarState:(BOOL)isCollapsed)
           
           // Wait a bit to ensure React Native is ready to receive the event
           dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            // Try to send the event a few times to ensure it's received
-            [self sendEventWithName:@"fileMenuAction" body:@{
-              @"action": @"fileSelected",
-              @"path": filePath
-            }];
-            
-            os_log_debug(bergenFileLog, "Sent fileSelected event for path: %{public}@", filePath);
-            
-            // Send again after a short delay as a fallback
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            // Check if bridge is ready before sending events
+            if ([self isBridgeReady]) {
+              // Try to send the event a few times to ensure it's received
               [self sendEventWithName:@"fileMenuAction" body:@{
                 @"action": @"fileSelected",
                 @"path": filePath
               }];
-              os_log_debug(bergenFileLog, "Sent fileSelected event again (backup)");
-            });
+              
+              os_log_debug(bergenFileLog, "Sent fileSelected event for path: %{public}@", filePath);
+              
+              // Send again after a short delay as a fallback
+              dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                if ([self isBridgeReady]) {
+                  [self sendEventWithName:@"fileMenuAction" body:@{
+                    @"action": @"fileSelected",
+                    @"path": filePath
+                  }];
+                  os_log_debug(bergenFileLog, "Sent fileSelected event again (backup)");
+                } else {
+                  os_log_error(bergenFileLog, "Cannot send backup event: bridge is not ready");
+                }
+              });
+            } else {
+              os_log_error(bergenFileLog, "Cannot send event: bridge is not ready");
+            }
           });
         }
       }
@@ -310,6 +342,12 @@ RCT_EXPORT_MODULE();
 + (BOOL)requiresMainQueueSetup
 {
   return YES;
+}
+
+// Initialize the RCTBridge when module is initialized by React Native
+- (void)setBridge:(RCTBridge *)bridge
+{
+  [super setBridge:bridge];
 }
 
 RCT_EXPORT_METHOD(showOpenDialog:(RCTPromiseResolveBlock)resolve

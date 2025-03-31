@@ -28,7 +28,7 @@
     "screenshots": "./scripts/generate-app-store-screenshots.sh",
     "lint": "biome check --write .",
     "lint:fix": "biome check --fix --unsafe .",
-    "start": "react-native start",
+    "start": "react-native start --host 127.0.0.1",
     "test": "jest"
   },
   "dependencies": {

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Alert,
   NativeEventEmitter,
   NativeModules,
   SafeAreaView,
-  ScrollView,
+  type ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -13,21 +13,17 @@ import {
 } from 'react-native';
 import RNFS from 'react-native-fs';
 
+import FileInfo from './src/components/FileInfo';
+import MainContent from './src/components/MainContent';
 // Import components
-import FileItem from './src/components/FileItem';
-import TabBar from './src/components/TabBar';
-import MarkdownViewer from './src/components/markdown/MarkdownViewer';
+import Sidebar from './src/components/Sidebar';
+
+// Import hooks
+import useMarkdownHeadings from './src/hooks/useMarkdownHeadings';
+import type { TabData } from './src/types';
 
 // Get native modules
-const { NativeMenuModule, FileManagerModule } = NativeModules;
-
-// Define tab data interface
-interface TabData {
-  id: string;
-  filePath: string;
-  fileName: string;
-  content: string;
-}
+const { NativeMenuModule, FileManagerModule, GitModule } = NativeModules;
 
 // Define global openMarkdownFile function used by MarkdownLink component
 declare global {
@@ -41,15 +37,22 @@ const App = () => {
   const [openTabs, setOpenTabs] = useState<TabData[]>([]);
   const [activeTabIndex, setActiveTabIndex] = useState<number>(-1);
   const [isSidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [isFileInfoSidebarVisible, setFileInfoSidebarVisible] = useState(false);
+  const [activeSidebarTab, setActiveSidebarTab] = useState<'files' | 'outline'>('files');
+  const [selectedFileInfo, setSelectedFileInfo] = useState<RNFS.ReadDirItem | null>(null);
+  const markdownScrollViewRef = useRef<ScrollView | null>(null);
   const isDarkMode = useColorScheme() === 'dark';
 
   // Helper function to get the currently active tab
-  const getActiveTab = (): TabData | undefined => {
+  const getActiveTab = useCallback((): TabData | undefined => {
     if (activeTabIndex >= 0 && activeTabIndex < openTabs.length) {
       return openTabs[activeTabIndex];
     }
     return undefined;
-  };
+  }, [activeTabIndex, openTabs]);
+
+  // Get headings from the markdown content using custom hook
+  const headings = useMarkdownHeadings(getActiveTab);
 
   // Set up native event listeners for menu actions
   useEffect(() => {
@@ -284,8 +287,22 @@ const App = () => {
 
   // This useEffect is redundant with the one above, removing to avoid duplicate directory reads
 
+  // Handle heading selection from outline
+  const handleHeadingPress = (position: number) => {
+    // Implement scrolling to the heading position
+    console.log('Scroll to position:', position);
+    // If you have a ref to your markdown ScrollView component:
+    if (markdownScrollViewRef.current) {
+      // This is an approximation - you might need to adjust based on your component
+      markdownScrollViewRef.current.scrollTo({ y: position * 0.5, animated: true });
+    }
+  };
+
   // Handle file selection from sidebar
   const handleFilePress = async (file: RNFS.ReadDirItem) => {
+    // Set the selected file info regardless of type
+    setSelectedFileInfo(file);
+
     if (file.isDirectory()) {
       setCurrentPath(file.path);
     } else if (
@@ -362,6 +379,11 @@ const App = () => {
     }
   };
 
+  // Toggle file info sidebar
+  const toggleFileInfoSidebar = () => {
+    setFileInfoSidebarVisible(!isFileInfoSidebarVisible);
+  };
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: isDarkMode ? '#000000' : '#FFFFFF' }]}
@@ -385,108 +407,38 @@ const App = () => {
 
         {/* Sidebar */}
         {!isSidebarCollapsed && (
-          <View style={[styles.sidebar, { backgroundColor: isDarkMode ? '#1C1C1E' : '#F2F2F7' }]}>
-            <View style={styles.navigationHeader}>
-              <TouchableOpacity style={styles.navigationButton} onPress={navigateUp}>
-                <Text style={{ color: isDarkMode ? '#2C9BF0' : '#007AFF' }}>↑ Up</Text>
-              </TouchableOpacity>
-              <Text
-                style={[styles.currentPathText, { color: isDarkMode ? '#FFFFFF' : '#000000' }]}
-                numberOfLines={1}
-              >
-                {currentPath.split('/').pop()}
-              </Text>
-            </View>
-            <View style={styles.actionHeader}>
-              <TouchableOpacity
-                style={[
-                  styles.actionButton,
-                  { backgroundColor: isDarkMode ? '#2C2C2E' : '#E5E5EA' }
-                ]}
-                onPress={openFilePicker}
-              >
-                <Text style={{ color: isDarkMode ? '#2C9BF0' : '#007AFF' }}>📂 Open File</Text>
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={styles.fileList}>
-              {files.map((file, index) => (
-                <FileItem
-                  key={index}
-                  name={file.name}
-                  isDirectory={file.isDirectory()}
-                  isSelected={false}
-                  onPress={() => handleFilePress(file)}
-                />
-              ))}
-              {files.length === 0 && (
-                <Text
-                  style={[styles.emptyDirectoryText, { color: isDarkMode ? '#8E8E93' : '#8E8E93' }]}
-                >
-                  Empty directory
-                </Text>
-              )}
-            </ScrollView>
-          </View>
+          <Sidebar
+            currentPath={currentPath}
+            files={files}
+            activeSidebarTab={activeSidebarTab}
+            headings={headings}
+            activeFileName={getActiveTab()?.fileName}
+            setActiveSidebarTab={setActiveSidebarTab}
+            navigateUp={navigateUp}
+            openFilePicker={openFilePicker}
+            handleFilePress={handleFilePress}
+            handleHeadingPress={handleHeadingPress}
+          />
         )}
 
         {/* Main content area */}
         <View style={[styles.contentArea, isSidebarCollapsed && styles.expandedContent]}>
-          {/* Tab bar */}
-          {openTabs.length > 0 && (
-            <TabBar
-              tabs={openTabs}
-              activeTabIndex={activeTabIndex}
-              onTabPress={handleTabPress}
-              onCloseTab={closeTab}
-              onAddTab={addNewTab}
-            />
-          )}
-
-          {/* Content */}
-          {getActiveTab() ? (
-            <>
-              <MarkdownViewer
-                content={getActiveTab()?.content || ''}
-                filePath={getActiveTab()?.filePath || ''}
-              />
-            </>
-          ) : (
-            <View
-              style={[
-                styles.noFileSelected,
-                { backgroundColor: isDarkMode ? '#1C1C1E' : '#F2F2F7' }
-              ]}
-            >
-              <Text
-                style={{
-                  fontSize: 16,
-                  color: isDarkMode ? '#8E8E93' : '#8E8E93',
-                  textAlign: 'center',
-                  marginBottom: 32
-                }}
-              >
-                Get started by opening a markdown file
-              </Text>
-              <TouchableOpacity
-                style={[
-                  styles.openFileButton,
-                  { backgroundColor: isDarkMode ? '#2C9BF0' : '#007AFF' }
-                ]}
-                onPress={openFilePicker}
-              >
-                <Text
-                  style={{
-                    color: '#FFFFFF',
-                    fontSize: 16,
-                    fontWeight: 'bold'
-                  }}
-                >
-                  📂 Open File
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          <MainContent
+            openTabs={openTabs}
+            activeTabIndex={activeTabIndex}
+            markdownScrollViewRef={markdownScrollViewRef}
+            handleTabPress={handleTabPress}
+            closeTab={closeTab}
+            addNewTab={toggleFileInfoSidebar}
+            openFilePicker={openFilePicker}
+            isFileInfoSidebarVisible={isFileInfoSidebarVisible}
+          />
         </View>
+
+        {/* File Info Sidebar */}
+        {isFileInfoSidebarVisible && (
+          <FileInfo file={selectedFileInfo} activeFilePath={getActiveTab()?.filePath} />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -504,82 +456,15 @@ const styles = StyleSheet.create({
     width: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRightWidth: 1,
-    borderRightColor: '#DDDDDD',
+    borderRightWidth: 0.5,
+    borderRightColor: '#AAAAAA',
     zIndex: 10
-  },
-  sidebar: {
-    width: 250,
-    borderRightWidth: 1,
-    borderRightColor: '#DDDDDD'
-  },
-  navigationHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#DDDDDD'
-  },
-  actionHeader: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#DDDDDD'
-  },
-  navigationButton: {
-    paddingVertical: 5,
-    paddingHorizontal: 10
-  },
-  actionButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    alignItems: 'center'
-  },
-  currentPathText: {
-    fontSize: 12,
-    marginLeft: 10,
-    flex: 1
-  },
-  fileList: {
-    flex: 1
   },
   contentArea: {
     flex: 1
   },
   expandedContent: {
     flex: 1
-  },
-  noFileSelected: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20
-  },
-  webView: {
-    flex: 1
-  },
-  emptyDirectoryText: {
-    padding: 15,
-    textAlign: 'center',
-    fontStyle: 'italic'
-  },
-  filePathDisplay: {
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 5,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE'
-  },
-  openFileButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4
   }
 });
 

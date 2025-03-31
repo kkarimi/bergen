@@ -35,6 +35,8 @@ coming soon!
 - 📁 **File system navigation** with a convenient sidebar
 - 📝 **Markdown rendering** with proper formatting
 - 📊 **Mermaid diagram support** for visualizing flowcharts and diagrams
+- ℹ️ **File information panel** displaying detailed file metadata
+- 📄 **Git integration** showing repository status and commit details
 - 🖥️ **macOS-native look and feel** designed specifically for desktop
 
 ## 🚀 Getting Started
@@ -96,7 +98,8 @@ yarn macos
 1. Use the sidebar to navigate through your file system
 2. Click on any markdown (.md) file to preview it
 3. Use the "Open File" button to navigate to a specific location
-4. The app automatically renders markdown formatting and Mermaid diagrams
+4. Click the info (ℹ️) button in the tab bar to view detailed file information
+5. The app automatically renders markdown formatting and Mermaid diagrams
 
 ## 🛠️ Built With
 
