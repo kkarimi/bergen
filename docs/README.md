@@ -17,6 +17,7 @@ This directory contains comprehensive documentation for the Bergen app.
   - [Build Modes and Options](./build-troubleshooting.md#build-modes-and-options) - Different ways to build the app
   - [Specialized Build Scripts](./build-troubleshooting.md#specialized-build-scripts) - Available build scripts for different scenarios
   - [Sandbox Permission Issues](./build-troubleshooting.md#sandbox-permission-issues) - Fixing common permission errors
+- [**Project Dependencies**](./project-dependencies.md) - Explanation of Gemfile, Podfile, and other dependency files
 - [**Troubleshooting Guide**](./troubleshooting.md) - Solutions for common development and runtime issues
 
 ### Distribution and Signing
