@@ -5,7 +5,7 @@ set -e
 
 # Function to print usage
 print_usage() {
-    echo "Usage: $0 [--bump-type <patch|minor|major>] [--publish-cask]"
+    echo "Usage: $0 [--bump-type <patch|minor|major>] [--publish-cask] [--no-build]"
     echo "Default bump type is patch"
     exit 1
 }
@@ -16,10 +16,12 @@ cd "$PROJECT_ROOT"
 # Parse command line arguments
 BUMP_TYPE="patch"
 PUBLISH_CASK=true
+NO_BUILD=false
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --bump-type) BUMP_TYPE="$2"; shift ;;
         --publish-cask) PUBLISH_CASK=true ;;
+        --no-build) NO_BUILD=true ;;
         *) print_usage ;;
     esac
     shift
@@ -102,9 +104,13 @@ sed -i '' "s|/releases/latest/download/bergen-macos-v[0-9]*\.[0-9]*\.[0-9]*\.zip
 git add package.json README.md
 git commit -m "chore: bump version to v${NEW_VERSION}"
 
-# Build the app
-echo "🏗 Building the app..."
-./scripts/build.sh
+# Build the app if --no-build is not specified
+if [ "$NO_BUILD" = false ]; then
+    echo "🏗 Building the app..."
+    ./scripts/build.sh
+else
+    echo "🏗 Skipping build as --no-build was specified"
+fi
 
 ZIP_NAME="bergen-macos-v${NEW_VERSION}.zip"
 
