@@ -44,7 +44,7 @@ coming soon!
 ### 📥 Download
 
 <div align="center">
-  <a href="https://github.com/kkarimi/bergen/releases/latest/download/bergen-macos-v0.1.15.zip">
+  <a href="https://github.com/kkarimi/bergen/releases/latest/download/bergen-macos-v0.1.16.zip">
     <img src="https://img.shields.io/badge/Download-Latest%20Release-blue?style=for-the-badge&logo=github" alt="Download Latest Release" />
   </a>
 </div>

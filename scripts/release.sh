@@ -114,7 +114,7 @@ if [ "$NO_BUILD" = false ]; then
     ./scripts/build.sh
 else
     echo "🏗 Skipping build as --no-build was specified"
-    
+
     # If --no-build is specified, check for existing zip and rename it
     if [ -f "$OLD_ZIP_NAME" ]; then
         echo "📦 Using existing build artifact and renaming to match new version..."
@@ -160,7 +160,7 @@ echo "🌎 Please review the release at: $RELEASE_EDIT_URL"
 
 # Push all changes to origin
 echo "🚀 Pushing all changes to origin..."
-git push origin main
+git push origin main --force-with-lease
 
 # Ask if user wants to open browser
 read -p "🌐 Open release page in browser? [Y/n] " -n 1 -r OPEN_BROWSER
