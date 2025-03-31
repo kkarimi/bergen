@@ -114,8 +114,8 @@ fi
 
 ZIP_NAME="bergen-macos-v${NEW_VERSION}.zip"
 
-# Check if zip file exists
-if [ ! -f "$ZIP_NAME" ]; then
+# Check if zip file exists (only if we're not skipping the build)
+if [ "$NO_BUILD" = false ] && [ ! -f "$ZIP_NAME" ]; then
     echo "❌ Build artifact not found: $ZIP_NAME"
     exit 1
 fi
@@ -126,11 +126,19 @@ git push origin "v${NEW_VERSION}"
 
 # Create GitHub release
 echo "🚀 Creating GitHub release v${NEW_VERSION}..."
-gh release create "v${NEW_VERSION}" \
-    --title "Bergen v${NEW_VERSION}" \
-    --notes "Release notes for version ${NEW_VERSION}" \
-    --draft \
-    "$ZIP_NAME"
+
+if [ "$NO_BUILD" = false ]; then
+    gh release create "v${NEW_VERSION}" \
+        --title "Bergen v${NEW_VERSION}" \
+        --notes "Release notes for version ${NEW_VERSION}" \
+        --draft \
+        "$ZIP_NAME"
+else
+    gh release create "v${NEW_VERSION}" \
+        --title "Bergen v${NEW_VERSION}" \
+        --notes "Release notes for version ${NEW_VERSION}" \
+        --draft
+fi
 
 echo "✅ Release v${NEW_VERSION} created successfully!"
 echo "📦 Binary uploaded to GitHub releases"
